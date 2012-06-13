@@ -1,0 +1,52 @@
+
+
+.uix-multiselect {
+	float: left;
+}
+
+.uix-multiselect .multiselect-selected-list, .uix-multiselect .multiselect-available-list {
+	position: relative;
+	overflow: hidden;
+}
+
+.uix-multiselect .multiselect-selected-list {
+	float: left;
+}
+
+.uix-multiselect .ui-widget-header {
+	overflow: hidden;
+	white-space: nowrap;
+	padding: 2px 4px;
+}
+
+.uix-multiselect .ui-widget-header div.header-text {
+	white-space: nowrap;
+}
+
+.uix-multiselect .ui-widget-header .multiselect-ui-control {
+	float: right;
+	width: 16px;
+	height: 16px;
+}
+
+.uix-multiselect .ui-widget-header .multiselect-ui-search {
+	float: right;
+	height: 14px;
+	font-size: 80%;
+}
+
+
+.uix-multiselect .ui-widget-content {
+	position: relative;
+	overflow: auto;
+}
+
+.multiselect-item-available, .multiselect-item-selected, .multiselect-dragged-element {
+	cursor: pointer;
+}
+
+.multiselect-dragged-element {
+	
+}
+
+
