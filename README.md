@@ -1,5 +1,5 @@
-SpeckCommerce
-=============
+jQuery Multiselect
+==================
 Version 2.0
 
 Introduction
