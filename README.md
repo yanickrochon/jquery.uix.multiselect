@@ -7,8 +7,8 @@ Introduction
 
 This widget is a complete rewrite of the [previous version](https://github.com/michael/multiselect). Why a new rewrite? Because the original widget's attempt was to create a all-in-one-out-of-the-box-multi-featured SELECT replacement and thus failed to be compliant with the DOMElement's behavior and limitations. Notably, it failed to :
 
-* update the selected items when modifying the SELECT element directly
-* didn't supporte disabled items
+* update the option items when modifying the SELECT element directly
+* didn't support disabled items
 * didn't support item groups
 * etc.
 
