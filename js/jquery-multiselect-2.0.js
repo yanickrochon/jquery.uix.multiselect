@@ -13,9 +13,13 @@
  * Depends:
  * jQuery UI 1.8+
  *
+ *
+ * @version 2.0beta
  */
 
 (function($) {
+    var globalScope = 0;
+
     // The jQuery.uix namespace will automatically be created if it doesn't exist
     $.widget("uix.multiselect", {
         options: {
@@ -31,6 +35,8 @@
             var that = this;
             var selListHeader, selListContent, avListHeader, avListContent;
             var btnSearch, btnSelectAll, btnDeselectAll;
+
+            this.scope = 'multiselect' + (globalScope++);
 
             this.element.hide();
             this._elementWrapper = $('<div></div>').addClass('uix-multiselect ui-widget')
@@ -208,6 +214,7 @@
                     return !draggable.data('selected');  // not selected only
                 },
                 activeClass: 'ui-state-highlight',
+                scope: this.scope,
                 drop: function(evt, ui) {
                     var index = that._optionCache.indexOf(ui.draggable.data('option-value'));
                     
@@ -223,6 +230,7 @@
                     return draggable.data('selected');  // selected only
                 },
                 activeClass: 'ui-state-highlight',
+                scope: this.scope,
                 drop: function(evt, ui) {
                     var index = that._optionCache.indexOf(ui.draggable.data('option-value'));
 
@@ -401,7 +409,7 @@
         },
 
         _createElement: function(optElement) {
-            return $('<div></div>').text(optElement.text()).addClass('ui-state-default multiselect-item-available')
+            var e = $('<div></div>').text(optElement.text()).addClass('ui-state-default multiselect-item-available')
                 .data('option-value', optElement.attr('value'))
                 .hover(
                     function() {
@@ -412,14 +420,18 @@
                         $(this).removeClass('ui-state-hover');
                         if (optElement.attr('selected')) $(this).addClass('ui-state-highlight');
                     }
-                )
-                .draggable({
+                );
+            if (optElement.attr('disabled')) {
+                e.addClass('ui-state-disabled');
+            } else {
+                e.draggable({
                     appendTo: "body",
+                    scope: this._widget.scope,
                     start: function(evt, ui) {
-                        $(this).addClass('ui-state-disabled');
+                        $(this).addClass('ui-state-disabled ui-state-active');
                     },
                     stop: function(evt, ui) {
-                        $(this).removeClass('ui-state-disabled');
+                        $(this).removeClass('ui-state-disabled ui-state-active');
                     },
                     helper: function() {
                         var e = $(this);
@@ -431,16 +443,18 @@
                     },
                     revert: 'invalid',
                     zIndex: 99999
-                })
-            ;
+                });
+            }
+            return e;
         },
 
         _appendToList: function(index, eData) {
             var insertIndex = index - 1;
             var selected = !!eData.optionElement.attr('selected');
 
-            while (insertIndex >= 0 && 
-                     (!!this._elements[insertIndex].optionElement.attr('selected') != selected && this._elements[insertIndex].listElement)) 
+            while ((insertIndex >= 0) && 
+                   (!!this._elements[insertIndex].optionElement.attr('selected') != selected) && 
+                   (this._elements[insertIndex].listElement)) 
             {
                 insertIndex--;
             }
@@ -598,6 +612,10 @@
         setSelected: function(index, selected, silent) {
             var eData = this.get(index);
 
+            if (eData.optionElement.attr('disabled') && selected) {
+                return;
+            }
+            
             if (selected) {
                 eData.optionElement.attr('selected', true);
             } else {

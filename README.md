@@ -1,6 +1,6 @@
 jQuery Multiselect
 ==================
-Version 2.0
+Version 2.0beta
 
 Introduction
 ------------
@@ -13,6 +13,8 @@ This widget is a complete rewrite of the [previous version](https://github.com/m
 * etc.
 
 Also, it quickly became slow when loading a few hundred items and some branches and [drag](https://github.com/michael/multiselect/issues/91) [and](https://github.com/michael/multiselect/issues/124) [drop](https://github.com/michael/multiselect/issues/8) issues.
+
+**Note :** This widget is still under development and all it's features has *not* been fully tested yet!
 
 Requirements
 ------------
