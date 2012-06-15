@@ -26,6 +26,8 @@
                 });
                 
                 $('#multiselect_disabled').multiselect();
+
+                $('#multiselect_groups').multiselect();
                 
 
                 if ($.fn.themeswitcher) {
@@ -92,6 +94,7 @@
                 $buffer = file_get_contents('countries.txt');
                 $data = array();
                 foreach (explode("\n", $buffer) as $line) {
+                    if (empty($line)) continue;
                     list($code,$lang) = split("=", $line, 2);
                     $selected = (rand(0, 20) == 1);
                     if (!empty($code)) {
@@ -123,11 +126,40 @@
             ?></select>
             </div>
             
+            <div class="ui-helper-clearfix"></div>
+        </div>
+
+        <div id="usage_groups">
+            <h2>Group related options</h2>
+            <div>
+            <select id="multiselect_groups" class="multiselect" multiple="multiple"><?php
+                $buffer = file_get_contents('cars.txt');
+                $data = array();
+                $group = array();
+                foreach (explode("\n", $buffer) as $line) {
+                    if (empty($line)) continue;
+                    if (strpos($line, '..') !== 0) {
+                        if (!empty($group)) {
+                            echo $group['begin'] . implode('', $group['options']) . $group['end'];
+                        }
+                        $group = array(
+                            'begin'   => '<optgroup label="' . htmlentities($line) . '">',
+                            'options' => array(),
+                            'end'     => '</optgroup>',
+                        );
+                    } else {
+                        $group['options'][] = '<option value="' . $code . '">' . substr($line, 2) . '</option>';
+                    }
+                }
+                if (!empty($group) && !empty($group['begin'])) {
+                    echo $group['begin'] . implode('', $group['options']) . $group['end'];
+                }
+            ?></select>
+            </div>
             
-        
+            <div class="ui-helper-clearfix"></div>
         </div>
         
-        <div class="ui-helper-clearfix"></div>
     </div>
 
     </body>

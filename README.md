@@ -44,7 +44,7 @@ To programmatically select/deselect, add/modify/remove items, you may access and
 TODO
 ----
 
-* add disabled items support
+* <del>add disabled items support</del>
 * add grouped items support
 * add custom item rendering support
 * test in all browsers

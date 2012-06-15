@@ -1,0 +1,209 @@
+Australia
+..Holden
+Belgium
+..Gillet
+Brazil
+..Agrale
+..Lobini
+..TAC Motors
+..Troller
+Canada
+..Bricklin
+..Studebaker
+China
+Czech Republic
+..Avia
+..Kaipan
+..Praga
+..Skoda Auto
+..Tatra
+France
+..ACMA
+..Aixam
+..Bugatti
+..Citroen
+..Cottin & Desgouttes
+..Facel Vega
+..Matra
+..Peugeot
+..Renault
+Germany
+..Audi
+..AWZ
+..Barkas
+..Bitter
+..BMW
+..Borgward
+..Büssing
+..DKW
+..Glas
+..Goliath
+..Hansa
+..Heinkel
+..Horch
+..Lloyd
+..Maybach
+..MAN
+..Mercedes-Benz
+..Multicar
+..NAG
+..Neoplan
+..Opel
+..Porsche
+..Robur
+..Simson
+..Trabant
+..Volkswagen
+..Wanderer
+..Wartburg
+India
+..Ashok Leyland
+..Chinkara Motors
+..DC Design
+..Force Motors
+..Hindustan Motors
+..ICML
+..Mahindra & Mahindra Limited
+..Maruti Suzuki
+..Premier Automobiles Limited
+..Tata Motors
+..SML ISUZU
+Iran
+..Bahman Group
+..IKCO (Iran Khodro)
+..Kerman Motors
+..Kish Khodro
+..MVM
+..Pars Khodro
+..SAIPA
+Italy
+..Alfa Romeo
+..DR Motor
+..Ferrari
+..Fiat
+..Intermeccanica
+..Lamborghini
+..Lancia
+..Maserati
+..Pagani
+..Siata
+..Vignale
+Japan
+..Acura
+..Daihatsu
+..Datsun
+..Hino
+..Honda
+..Infiniti
+..Isuzu
+..Lexus
+..Mazda
+..Mitsubishi Motors
+..Nissan
+..Subaru
+..Suzuki
+..Toyota
+..Yamaha
+Malaysia
+..Naza
+..Perodua
+..Proton
+Mexico
+..Mastretta
+..DINA
+..King
+..Tranvias-Cimex
+..Vehizero
+..Carabela
+..Italika
+Monaco
+..Venturi
+Netherlands
+..DAF
+..Spyker
+Romania
+..Automobile Dacia
+Russia
+..Avtoframos
+..GAZ
+..Kamaz
+..Lada
+..Marussia Motors
+..Volga
+Serbia
+..Zastava Automobiles
+South Africa
+..G.S.M.
+South Korea
+..GM Korea
+..Hyundai Motor Company
+..Kia Motors
+..Renault Samsung Motors
+..SsangYong Motor Company
+Spain
+..SEAT
+Sweden
+..Koenigsegg
+..Jösse Car
+..Saab
+..Volvo
+Switzerland
+..Enzmann
+United Kingdom
+..AC
+..Allard
+..Alvis
+..Armstrong Siddeley
+..Aston Martin
+..Austin-Healey
+..Bentley
+..Bristol
+..British Leyland
+..Caterham
+..Daimler
+..Elva
+..Ginetta
+..Gordon Keeble
+..Hillman
+..Humber
+..Jaguar
+..Jensen
+..Jowett
+..Lanchester
+..Land Rover
+..Lotus
+..Marcos
+..MG
+..MG Cars
+..Mini Cooper
+..Morgan
+..Morris
+..Noble
+..Riley
+..Rolls Royce
+..Rover
+..Singer
+..Sunbeam
+..Triumph
+..Trojan
+..TVR
+..Vauxhall
+..Wolseley
+United States
+..Buick
+..Cadillac
+..Chevrolet
+..Coda
+..Chrysler
+..DeLorean Motor Company
+..Dodge
+..Fisker
+..Ford
+..Global Electric Motorcars
+..GMC
+..International Harvester
+..Jeep
+..Lincoln
+..Navistar International
+..Scion
+..Tesla

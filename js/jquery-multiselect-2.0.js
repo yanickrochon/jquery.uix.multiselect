@@ -1,5 +1,5 @@
 /*
- * jQuery UI Multiselect 2.0
+ * jQuery UIx Multiselect 2.0beta
  *
  * Authors:
  *  Yanick Rochon (yanick.rochon[at]gmail[dot]com)
@@ -14,7 +14,6 @@
  * jQuery UI 1.8+
  *
  *
- * @version 2.0beta
  */
 
 (function($) {
@@ -136,10 +135,23 @@
                 that._optionCache.clear();
 
                 var options = that.element[0].childNodes;
+                var opt;
 
-                for (var i=0, len=options.length; i<len; i++) {
-                    if (options[i].nodeType == 1) {
-                        that._optionCache.add($(options[i]));
+                for (var i=0, l1=options.length; i<l1; i++) {
+                    opt = options[i];
+                    if (opt.nodeType == 1) {
+                        if (opt.tagName.toUpperCase() == 'OPTGROUP') {
+                            var optGroup = $(opt).attr('label');
+                            var grpOptions = opt.childNodes;
+                            for (var j=0, l2=grpOptions.length; j<l2; j++) {
+                                opt = grpOptions[j];
+                                if (opt.nodeType == 1) {
+                                    that._optionCache.add($(opt), optGroup);
+                                }
+                            }
+                        } else {
+                            that._optionCache.add($(opt));
+                        }
                     }
                 }
 
@@ -299,10 +311,8 @@
          * Naive general implementation
          */
         standard: function(a, b) {
-            var at = a.optionElement.text();
-            var bt = b.optionElement.text();
-            if (at > bt) return 1;
-            if (at < bt) return -1;
+            if (a > b) return 1;
+            if (a < b) return -1;
             return 0;
         },
         /*
@@ -317,8 +327,8 @@
                 ore = /^0/,
                 i = function(s) { return naturalSort.insensitive && (''+s).toLowerCase() || ''+s },
                 // convert all to strings strip whitespace
-                x = i(a.optionElement.text()).replace(sre, '') || '',
-                y = i(b.optionElement.text()).replace(sre, '') || '',
+                x = i(a).replace(sre, '') || '',
+                y = i(b).replace(sre, '') || '',
                 // chunk/tokenize
                 xN = x.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
                 yN = y.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
@@ -509,11 +519,12 @@
             this._listContainers.available.empty();
         },
 
-        add: function(optElement) {
+        add: function(optElement, optGroup) {
             var eData = {
                 filtered: false,
                 listElement: null,
-                optionElement: optElement
+                optionElement: optElement,
+                optionGroup: optGroup
             };
 
             this._elements.push(eData);
@@ -521,7 +532,15 @@
 
         reIndex: function() {
             if (this._widget.options.sortMethod) {
-                this._elements.sort(ItemComparators[this._widget.options.sortMethod]);
+                var comparator = ItemComparators[this._widget.options.sortMethod];
+                this._elements.sort(function(a, b) {
+                    if (a.optionGroup || b.optionGroup) {
+                        // sort groups
+                        var g = comparator(a.optionGroup, b.optionGroup);
+                        if (g != 0) return g;
+                    }
+                    return comparator(a.optionElement.text(), b.optionElement.text());
+                });
             }
 
             this._bufferedMode(true);
