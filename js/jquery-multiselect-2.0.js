@@ -146,11 +146,11 @@
                             for (var j=0, l2=grpOptions.length; j<l2; j++) {
                                 opt = grpOptions[j];
                                 if (opt.nodeType == 1) {
-                                    that._optionCache.add($(opt), optGroup);
+                                    that._optionCache.prepare($(opt), optGroup);
                                 }
                             }
                         } else {
-                            that._optionCache.add($(opt));
+                            that._optionCache.prepare($(opt));
                         }
                     }
                 }
@@ -305,12 +305,16 @@
 
 
 
-
+    /**
+     * Comparator registry.
+     *
+     * function(a, b, g)   where a is compared to b and g is true if they are groups
+     */
     var ItemComparators = {
         /**
          * Naive general implementation
          */
-        standard: function(a, b) {
+        standard: function(a, b, g) {
             if (a > b) return 1;
             if (a < b) return -1;
             return 0;
@@ -319,7 +323,7 @@
          * Natural Sort algorithm for Javascript - Version 0.7 - Released under MIT license
          * Author: Jim Palmer (based on chunking idea from Dave Koelle)
          */
-        natural: function naturalSort(a, b) {
+        natural: function naturalSort(a, b, g) {
             var re = /(^-?[0-9]+(\.?[0-9]*)[df]?e?[0-9]?$|^0x[0-9a-f]+$|[0-9]+)/gi,
                 sre = /(^[ ]*|[ ]*$)/g,
                 dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
@@ -399,6 +403,7 @@
             available: $('<div></div>').appendTo(this._widget._lists['available'])
         };
         this._elements = [];
+        this._groups = {};
         this._moveEffect = {
             fn: widget.options.moveEffect,
             options: widget.options.moveEffectOptions,
@@ -418,8 +423,8 @@
             }, data);
         },
 
-        _createElement: function(optElement) {
-            var e = $('<div></div>').text(optElement.text()).addClass('ui-state-default multiselect-item-available')
+        _createElement: function(optElement, optGroup) {
+            var e = $('<div></div>').text(optElement.text()).addClass('ui-state-default option-element')
                 .data('option-value', optElement.attr('value'))
                 .hover(
                     function() {
@@ -445,7 +450,7 @@
                     },
                     helper: function() {
                         var e = $(this);
-                        return $('<div></div>').addClass('multiselect-dragged-element ui-widget ui-widget-content ui-state-active ui-corner-all')
+                        return $('<div></div>').addClass('uix-multiselect-dragged-element ui-widget ui-widget-content ui-state-active ui-corner-all')
                             .text(e.text())
                             .width(e.width())
                             .height(e.height())
@@ -455,7 +460,74 @@
                     zIndex: 99999
                 });
             }
+            if (optGroup) {
+                e.addClass('grouped-option').prepend($('<span></span>').addClass('ui-icon ui-icon-bullet'));
+            }
             return e;
+        },
+        
+        _updateGroupElements: function(index, eData, selected) {
+            var groupName = eData.optionGroup;
+            var gData = this._groups[groupName];
+            var addKey = (selected ? 'selected' : 'available') + 'Info';
+            var remKey = (selected ? 'available' : 'selected') + 'Info';
+            
+            if (!gData[addKey]) {
+                gData[addKey] = {
+                    element: $('<div></div>').text(groupName)
+                        .addClass('ui-widget-header ui-priority-secondary group-element'),
+                    optIndex: index
+                };
+                gData[addKey].element.insertBefore(eData.listElement);
+            } else if (gData[addKey].optIndex > index) {
+                gData[addKey].optIndex = index;
+                gData[addKey].element.insertBefore(eData.listElement);
+            } else if (gData[addKey].optIndex == index) {
+                var shouldBeVisible = false;
+                // try to find if we still have something to keep the group element attached
+                for (var i=gData[addKey].optIndex+1, len=this._elements.length; i<len; i++) {
+                    if (this._elements[i].optionGroup != groupName) {
+                        break;
+                    } else if (!!this._elements[i].optionElement.attr('selected') == selected) {
+                        gData[addKey].optIndex = i;
+                        shouldBeVisible = true;
+                        break;
+                    }
+                }
+                if (!shouldBeVisible) {
+                    gData[addKey].element.remove();
+                    gData[addKey] = null;
+                }
+            }
+            if (gData[remKey]) {
+                if (gData[remKey].optIndex == index) {
+                    var shouldBeVisible = false;
+                    //alert( gData[remKey].optIndex );
+                    // try to find if we still have something to keep the group element attached
+                    for (var i=gData[remKey].optIndex+1, len=this._elements.length; i<len; i++) {
+                        if (this._elements[i].optionGroup != groupName) {
+                            //alert( "Different group at " + i + " with " + this._elements[i].optionGroup + " != " + groupName);
+                            break;
+                        } else if (!this._elements[i].optionElement.attr('selected') == selected) {
+                            //alert( "Found next element at " + i );
+                            gData[remKey].optIndex = i;
+                            shouldBeVisible = true;
+                            break;
+                        }
+                    }
+                    if (!shouldBeVisible) {
+                        gData[remKey].element.remove();
+                        gData[remKey] = null;
+                    }
+                }
+            }
+            /*
+            var k = (selected ? 'selected' : 'available') + 'Header';
+            if (!this._groups[gName][k]) {
+                this._groups[gName][k] = 
+            }
+            return this._groups[gName][k];
+            */
         },
 
         _appendToList: function(index, eData) {
@@ -470,7 +542,7 @@
             }
 
             if (!eData.listElement) {
-                eData.listElement = this._createElement(eData.optionElement);
+                eData.listElement = this._createElement(eData.optionElement, eData.optionGroup);
             }
 
             eData.listElement[(selected?'add':'remove')+'Class']('ui-state-highlight').data('selected', selected).hide();  // setup draggable
@@ -480,6 +552,10 @@
                 this._listContainers[selected?'selected':'available'].prepend(eData.listElement);
             } else {
                 eData.listElement.insertAfter(this._elements[insertIndex].listElement);
+            }
+
+            if (eData.optionGroup) {
+                this._updateGroupElements(index, eData, selected);
             }
 
             if (selected || !eData.filtered) {
@@ -515,11 +591,13 @@
 
             this._visibleCount = 0;
             this._elements = [];
+            this._groups = {};
             this._listContainers.selected.empty();
             this._listContainers.available.empty();
         },
 
-        add: function(optElement, optGroup) {
+        // prepare option element to be rendered (must call reIndex after this!)
+        prepare: function(optElement, optGroup) {
             var eData = {
                 filtered: false,
                 listElement: null,
@@ -531,12 +609,14 @@
         },
 
         reIndex: function() {
+            // note : even if not sorted, options are added as they appear, 
+            //        so they should be grouped just fine anyway!
             if (this._widget.options.sortMethod) {
                 var comparator = ItemComparators[this._widget.options.sortMethod];
                 this._elements.sort(function(a, b) {
                     if (a.optionGroup || b.optionGroup) {
                         // sort groups
-                        var g = comparator(a.optionGroup, b.optionGroup);
+                        var g = comparator(a.optionGroup, b.optionGroup, true);
                         if (g != 0) return g;
                     }
                     return comparator(a.optionElement.text(), b.optionElement.text());
@@ -545,9 +625,18 @@
 
             this._bufferedMode(true);
 
-            for (var i=0, len=this._elements.length; i<len; i++) {
-                if (!this._elements[i].listElement) {
-                    this._appendToList(i, this._elements[i]);
+            for (var i=0, e, len=this._elements.length; i<len; i++) {
+                e = this._elements[i];
+                if (e.optionGroup) {
+                    if (!this._groups[e.optionGroup]) {
+                        this._groups[e.optionGroup] = {startIndex:i, count:0, selectedInfo:null, availableInfo:null};
+                    } else if (this._groups[e.optionGroup].startIndex > i) {
+                        this._groups[e.optionGroup].startIndex = i;
+                    }
+                    this._groups[e.optionGroup].count++;
+                }
+                if (!e.listElement) {
+                    this._appendToList(i, e);
                 }
             } 
 

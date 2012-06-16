@@ -148,7 +148,7 @@
                             'end'     => '</optgroup>',
                         );
                     } else {
-                        $group['options'][] = '<option value="' . $code . '">' . substr($line, 2) . '</option>';
+                        $group['options'][] = '<option value="' . $line . '">' . substr($line, 2) . '</option>';
                     }
                 }
                 if (!empty($group) && !empty($group['begin'])) {

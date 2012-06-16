@@ -45,7 +45,7 @@ TODO
 ----
 
 * <del>add disabled items support</del>
-* add grouped items support
+* add grouped items support (*in development*)
 * add custom item rendering support
 * test in all browsers
 * etc.
