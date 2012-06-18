@@ -49,7 +49,9 @@
                 .append(
                     $('<div></div>').addClass('multiselect-selected-list')
                         .append( $('<div></div>').addClass('ui-widget-header ui-corner-tl')
-                            .append( btnDeselectAll = $('<button></button>').addClass('uix-control-right').attr('title', this._t('deselectAll'))
+                            .append( btnDeselectAll = $('<button></button>').addClass('uix-control-right')
+                                .attr('data-localekey', 'deselectAll')
+                                .attr('title', this._t('deselectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-e'}, text:false})
                                 .click(function() { that._optionCache.setSelectedAll(false); })
                             )
@@ -60,11 +62,15 @@
                 .append(
                     $('<div></div>').addClass('multiselect-available-list')
                         .append( $('<div></div>').addClass('ui-widget-header ui-corner-tr')//.text('Available items')
-                            .append( btnSelectAll = $('<button></button>').addClass('uix-control-right').attr('title', this._t('selectAll'))
+                            .append( btnSelectAll = $('<button></button>').addClass('uix-control-right')
+                                .attr('data-localekey', 'selectAll')
+                                .attr('title', this._t('selectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false}) 
                                 .click(function() { that._optionCache.setSelectedAll(true); })
                             )
-                            .append( btnSearch = $('<button></button').addClass('uix-control-right').attr('title', this._t('search'))
+                            .append( btnSearch = $('<button></button').addClass('uix-control-right')
+                                .attr('data-localekey', 'search')
+                                .attr('title', this._t('search'))
                                 .button({icons:{primary:'ui-icon-search'}, text:false})
                                 .click(function() {
                                     if (that._searchField.is(':visible')) {
@@ -269,9 +275,10 @@
         },
 
         _updateControls: function() {
-            this._buttons.search.attr('title', this._t('search'));
-            this._buttons.selectAll.attr('title', this._t('selectAll'));
-            this._buttons.deselectAll.attr('title', this._t('deselectAll'));        
+            var that = this;
+            $('.uix-control-left,.uix-control-right', this._elementWrapper).each(function() {
+                $(this).attr('title', that._t( $(this).attr('data-localekey') ));
+            });
         },
 
         _updateHeaders: function() {
@@ -509,15 +516,19 @@
                     element: $('<div></div>')
                         .addClass('ui-widget-header ui-priority-secondary group-element')
                         .append($('<span></span>').addClass('label').text(groupName + ' (' + count[selected?0:1] + ')'))
-                        .append( $('<button></button>').addClass('uix-control-right').attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
+                        .append( $('<button></button>').addClass('uix-control-right')
+                            .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
+                            .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
                             .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
                             .click(function() {
                                 that._bufferedMode(false);
                                 for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
-                                    that.setSelected(i, !selected, true);
+                                    if (!that._elements[i].filtered) {
+                                        that.setSelected(i, !selected, true);
+                                    }
                                 }
                                 count = that._countGroupElements(gData);
-                                that._updateHeaders();
+                                that._widget._updateHeaders();
                                 gData[addKey].element.children(':eq(1)').text(groupName + ' (' + count[selected?0:1] + ')');
                                 that._bufferedMode(false);
                                 that._widget.element.trigger('change', this._createEventUI({ itemIndex:[gData.startIndex,gData.startIndex+gData.count], selected:!selected}) );
@@ -527,7 +538,9 @@
                 };
                 if (this._widget.options.collapsibleGroups) {
                     gData[addKey].element
-                        .prepend( $('<button></button>').addClass('uix-control-left').attr('title', this._widget._t('collapseGroup'))
+                        .prepend( $('<button></button>').addClass('uix-control-left')
+                            .attr('data-localekey', 'collapseGroup')
+                            .attr('title', this._widget._t('collapseGroup'))
                             .button({icons:{primary:'ui-icon-plus'}, text:false})
                             .click(function() { 
                                 var e, c = !gData.collapsed[selected?0:1];
@@ -624,8 +637,6 @@
                 if (this._moveEffect && this._moveEffect.fn) {
                     eData.listElement.show(this._moveEffect.fn, this._moveEffect.options, this._moveEffect.speed);
                 } else {
-                    console.log(selected);
-                    console.log(this._isOptionCollapsed(eData, selected) );
                     eData.listElement.show();
                 }
             }

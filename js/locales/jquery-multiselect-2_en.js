@@ -28,6 +28,10 @@
         selectAll: 'Select all',
         deselectAll: 'Deselect all',
         search: 'Search options',
+        collapseGroup: 'Collapse Group',
+        expandGroup: 'Expand Group',
+        selectAllGroup: 'Select All Group',
+        deselectAllGroup: 'Deselect All Group'
     };
 
     // link locales

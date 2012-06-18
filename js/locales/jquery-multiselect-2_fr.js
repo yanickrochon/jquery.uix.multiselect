@@ -28,6 +28,10 @@
         selectAll: 'Sélectionner tout',
         deselectAll: 'Désélectionner tout',
         search: 'Rechercher les options',
+        collapseGroup: 'Masquer le groupe',
+        expandGroup: 'Afficher le groupe',
+        selectAllGroup: 'Sélectionner tout le groupe',
+        deselectAllGroup: 'Déselectionner tout le groupe'
     };
 
     // link locales
