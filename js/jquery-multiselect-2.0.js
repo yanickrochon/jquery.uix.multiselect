@@ -26,8 +26,9 @@
             splitRatio: 0.55,          // % of the left list's width of the widget total width
             sortMethod: 'standard',    // null, 'standard' or 'natural'
             moveEffect: null,          // 'blind','bounce','clip','drop','explode','fold','highlight','puff','pulsate','shake','slide'
-            moveEffectOptions: {},      // effect options (see jQuery UI documentation)
-            moveEffectSpeed: null      // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show')
+            moveEffectOptions: {},     // effect options (see jQuery UI documentation)
+            moveEffectSpeed: null,     // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show')
+            collapsibleGroups: true    // tells whether the option groups can be collapsed or not
         },
 
         _create: function() {
@@ -467,6 +468,7 @@
         },
         
         _updateGroupElements: function(index, eData, selected) {
+            var that = this;
             var groupName = eData.optionGroup;
             var gData = this._groups[groupName];
             var addKey = (selected ? 'selected' : 'available') + 'Info';
@@ -474,29 +476,46 @@
             
             if (!gData[addKey]) {
                 gData[addKey] = {
-                    element: $('<div></div>').text(groupName)
-                        .addClass('ui-widget-header ui-priority-secondary group-element'),
+                    element: $('<div></div>')
+                        .addClass('ui-widget-header ui-priority-secondary group-element')
+                        .append($('<span></span>').addClass('ui-icon ui-icon-plus')
+                            .click(function() {
+                                var e, c = $(this).hasClass('ui-icon-plus');
+                                $(this).removeClass('ui-icon-' + (c ? 'plus' : 'minus'))
+                                       .addClass('ui-icon-' + (c ? 'minus' : 'plus'));
+                                for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
+                                    e = that._elements[i];
+                                    e.collapsed = c;
+                                    e.listElement[c || e.filtered ? 'hide' : 'show']();
+                                }
+                            })
+                        )
+                        .append($('<span></span>').text(groupName + ' (' + gData.count + ')')),
                     optIndex: index
                 };
                 gData[addKey].element.insertBefore(eData.listElement);
-            } else if (gData[addKey].optIndex > index) {
-                gData[addKey].optIndex = index;
-                gData[addKey].element.insertBefore(eData.listElement);
-            } else if (gData[addKey].optIndex == index) {
-                var shouldBeVisible = false;
-                // try to find if we still have something to keep the group element attached
-                for (var i=gData[addKey].optIndex+1, len=this._elements.length; i<len; i++) {
-                    if (this._elements[i].optionGroup != groupName) {
-                        break;
-                    } else if (!!this._elements[i].optionElement.attr('selected') == selected) {
-                        gData[addKey].optIndex = i;
-                        shouldBeVisible = true;
-                        break;
+            } else {
+                // update group name and count
+                gData[addKey].element.children(':eq(1)').text(groupName + ' (' + gData.count + ')');
+                if (gData[addKey].optIndex > index) {
+                    gData[addKey].optIndex = index;
+                    gData[addKey].element.insertBefore(eData.listElement);
+                } else if (gData[addKey].optIndex == index) {
+                    var shouldBeVisible = false;
+                    // try to find if we still have something to keep the group element attached
+                    for (var i=gData[addKey].optIndex+1, len=this._elements.length; i<len; i++) {
+                        if (this._elements[i].optionGroup != groupName) {
+                            break;
+                        } else if (!!this._elements[i].optionElement.attr('selected') == selected) {
+                            gData[addKey].optIndex = i;
+                            shouldBeVisible = true;
+                            break;
+                        }
                     }
-                }
-                if (!shouldBeVisible) {
-                    gData[addKey].element.remove();
-                    gData[addKey] = null;
+                    if (!shouldBeVisible) {
+                        gData[addKey].element.remove();
+                        gData[addKey] = null;
+                    }
                 }
             }
             if (gData[remKey]) {
@@ -558,7 +577,7 @@
                 this._updateGroupElements(index, eData, selected);
             }
 
-            if (selected || !eData.filtered) {
+            if ((selected || !eData.filtered) && !eData.collapsed) {
                 if (this._moveEffect && this._moveEffect.fn) {
                     eData.listElement.show(this._moveEffect.fn, this._moveEffect.options, this._moveEffect.speed);
                 } else {
@@ -600,6 +619,7 @@
         prepare: function(optElement, optGroup) {
             var eData = {
                 filtered: false,
+                collapsed: false,
                 listElement: null,
                 optionElement: optElement,
                 optionGroup: optGroup
@@ -676,7 +696,7 @@
                 var eData = this._elements[i];
                 var filtered = !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
 
-                if (!eData.listElement.data('selected') && eData.filtered != filtered) {
+                if (!eData.listElement.data('selected') && eData.filtered != filtered && !eData.collapsed) {
                     eData.listElement[filtered ? 'hide' : 'show']();
                 }
 

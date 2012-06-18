@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>jQuery Multiselect 2.0 Example Page</title>
+        <link type="text/css" href="css/common.css" rel="stylesheet" />
+        <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
+        <link type="text/css" href="css/jquery-multiselect-2.0.css" rel="stylesheet" />
+        <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js"></script>
+        <script type="text/javascript" src="js/jquery-multiselect-2.0.js"></script>
+        <script type="text/javascript" src="js/locales/jquery-multiselect-2_fr.js"></script>
+        <script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>
+        <script type="text/javascript">
+            $(function() {
+                $('#multiselect_simple').multiselect({
+                    sortMethod: 'standard',
+                    moveEffect: 'blind',
+                    moveEffectOptions: {direction:'vertical'},
+                    moveEffectSpeed: 'fast'
+                }).bind('change', function(evt, ui) {
+                    var value = ui.itemIndex > -1 ? ui.optionCache.get(ui.itemIndex).optionElement.attr('value') : null;
+                    $('#debug_simple').append( $('<div></div>').text('Multiselect change event! ' + (value ? 'value='+value+' was' : 'all items were') + ' ' + (ui.selected ? 'selected' : 'deselected')) );
+                }).bind('multiselectsearch', function(evt, ui) {
+                    $('#debug_simple').append( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
+                });
+                
+                $('#multiselect_disabled').multiselect();
+
+                $('#multiselect_groups').multiselect();
+                
+
+                if ($.fn.themeswitcher) {
+                    $('#switcher')
+                        .css('padding-bottom', '8px')
+                        .before('<h4>Use the themeroller to dynamically change look and feel</h4>')
+                        .themeswitcher();
+                }
+
+
+                $('#btnRefresh_simple').click(function() {
+                    $('#multiselect_simple').multiselect('refresh');
+                });
+                $('#btnToggleOriginal_simple').click(function() {
+                    $('#multiselect_simple').toggle();
+                });
+
+                $('#selectLocale').change(function() {
+                    $('.multiselect').multiselect('locale', $(this).val() );
+                });
+
+                // build locale options
+                for (var locale in $.uix.multiselect.i18n) {
+                    $('#selectLocale').append($('<option></option>').attr('value', locale).text(locale.length == 0 ? '(default)' : locale));
+                }
+                $('#selectLocale').val($('#multiselect').multiselect('locale'));
+
+            });
+        </script>
+        <style type="text/css">
+            .multiselect {
+                width: 450px;
+                height: 200px;
+            }
+            #locales { padding-bottom:16px; }
+            #uiControls {
+                margin-top: 16px;
+            }
+            #debug_simple {
+                height: 100px;
+                overflow: auto;
+                border: 1px solid black;
+                padding: 8px;
+                margin-top: 16px;
+            }
+        </style>
+    </head>
+    <body>
+
+    <div id="content">
+
+        <h1>Welcome to the jQuery Multiselect 2.0 Widget !</h1>
+
+        <div id="switcher"></div>
+        <div id="locales">
+            <label for="selectLocale">Change locale : </label><select id="selectLocale" name="selectLocale"></select>
+        </div>
+
+        <div id="usage_simple">
+            <h2>Simple usage</h2>
+            <div>
+            <select id="multiselect_simple" class="multiselect" multiple="multiple">
+                <option value="ABW">Aruba</option>
+                <option value="AFG">Afghanistan</option>
+                <option value="AGO">Angola</option>
+                <option value="AIA">Anguilla</option>
+                <option value="ALA">Åland Islands</option>
+                <option value="ALB">Albania</option>
+                <option value="AND">Andorra</option>
+                <option value="ANT">Netherlands Antilles</option>
+                <option value="ARE">United Arab Emirates</option>
+                <option value="ARG">Argentina</option>
+                <option value="ARM">Armenia</option>
+                <option value="ASM">American Samoa</option>
+                <option value="ATA">Antarctica</option>
+                <option value="ATF">French Southern Territories</option>
+                <option value="ATG">Antigua and Barbuda</option>
+                <option value="AUS">Australia</option>
+                <option value="AUT">Austria</option>
+                <option value="AZE">Azerbaijan</option>
+                <option value="BDI">Burundi</option>
+                <option value="BEL">Belgium</option>
+                <option value="BEN">Benin</option>
+                <option value="BFA">Burkina Faso</option>
+                <option value="BGD">Bangladesh</option>
+                <option value="BGR">Bulgaria</option>
+                <option value="BHR">Bahrain</option>
+                <option value="BHS">Bahamas</option>
+                <option value="BIH">Bosnia and Herzegovina</option>
+                <option value="BLM">Saint Barthélemy</option>
+                <option value="BLR">Belarus</option>
+                <option value="BLZ">Belize</option>
+                <option value="BMU">Bermuda</option>
+                <option value="BOL">Bolivia</option>
+                <option value="BRA">Brazil</option>
+                <option value="BRB">Barbados</option>
+                <option value="BRN">Brunei Darussalam</option>
+                <option value="BTN">Bhutan</option>
+                <option value="BVT">Bouvet Island</option>
+                <option value="BWA">Botswana</option>
+                <option value="CAF">Central African Republic</option>
+                <option value="CAN">Canada</option>
+                <option value="CCK">Cocos Islands</option>
+                <option value="CHE">Switzerland</option>
+                <option value="CHL">Chile</option>
+                <option value="CHN">China</option>
+                <option value="CIV">Côte d'Ivoire</option>
+                <option value="CMR">Cameroon</option>
+                <option value="COD">Congo, The Democratic Republic of the</option>
+                <option value="COG">Congo</option>
+                <option value="COK">Cook Islands</option>
+                <option value="COL">Colombia</option>
+                <option value="COM">Comoros</option>
+                <option value="CPV">Cape Verde</option>
+                <option value="CRI">Costa Rica</option>
+                <option value="CUB">Cuba</option>
+                <option value="CXR">Christmas Island</option>
+                <option value="CYM">Cayman Islands</option>
+                <option value="CYP">Cyprus</option>
+                <option value="CZE">Czech Republic</option>
+                <option value="DEU">Germany</option>
+                <option value="DJI">Djibouti</option>
+                <option value="DMA">Dominica</option>
+                <option value="DNK">Denmark</option>
+                <option value="DOM" selected="selected">Dominican Republic</option>
+                <option value="DZA">Algeria</option>
+                <option value="ECU">Ecuador</option>
+                <option value="EGY">Egypt</option>
+                <option value="ERI" selected="selected">Eritrea</option>
+                <option value="ESH">Western Sahara</option>
+                <option value="ESP">Spain</option>
+                <option value="EST">Estonia</option>
+                <option value="ETH">Ethiopia</option>
+                <option value="FIN">Finland</option>
+                <option value="FJI">Fiji</option>
+                <option value="FLK">Falkland Islands</option>
+                <option value="FRA">France</option>
+                <option value="FRO">Faroe Islands</option>
+                <option value="FSM">Micronesia, Federated States of</option>
+                <option value="GAB">Gabon</option>
+                <option value="GBR">United Kingdom</option>
+                <option value="GEO">Georgia</option>
+                <option value="GGY">Guernsey</option>
+                <option value="GHA">Ghana</option>
+                <option value="GIB">Gibraltar</option>
+                <option value="GIN">Guinea</option>
+                <option value="GLP">Guadeloupe</option>
+                <option value="GMB">Gambia</option>
+                <option value="GNB">Guinea-Bissau</option>
+                <option value="GNQ">Equatorial Guinea</option>
+                <option value="GRC">Greece</option>
+                <option value="GRD">Grenada</option>
+                <option value="GRL">Greenland</option>
+                <option value="GTM">Guatemala</option>
+                <option value="GUF">French Guiana</option>
+                <option value="GUM">Guam</option>
+                <option value="GUY">Guyana</option>
+                <option value="HKG">Hong Kong</option>
+                <option value="HMD" selected="selected">Heard Island and McDonald Islands</option>
+                <option value="HND">Honduras</option>
+                <option value="HRV">Croatia</option>
+                <option value="HTI" selected="selected">Haiti</option>
+                <option value="HUN">Hungary</option>
+                <option value="IDN">Indonesia</option>
+                <option value="IMN">Isle of Man</option>
+                <option value="IND">India</option>
+                <option value="IOT">British Indian Ocean Territory</option>
+                <option value="IRL">Ireland</option>
+                <option value="IRN">Iran, Islamic Republic of</option>
+                <option value="IRQ">Iraq</option>
+                <option value="ISL">Iceland</option>
+                <option value="ISR">Israel</option>
+                <option value="ITA">Italy</option>
+                <option value="JAM">Jamaica</option>
+                <option value="JEY">Jersey</option>
+                <option value="JOR">Jordan</option>
+                <option value="JPN">Japan</option>
+                <option value="KAZ">Kazakhstan</option>
+                <option value="KEN">Kenya</option>
+                <option value="KGZ">Kyrgyzstan</option>
+                <option value="KHM">Cambodia</option>
+                <option value="KIR">Kiribati</option>
+                <option value="KNA">Saint Kitts and Nevis</option>
+                <option value="KOR">Korea, Republic of</option>
+                <option value="KWT">Kuwait</option>
+                <option value="LAO">Lao, People's Democratic Republic</option>
+                <option value="LBN">Lebanon</option>
+                <option value="LBR">Liberia</option>
+                <option value="LBY">Libyan Arab Jamahiriya</option>
+                <option value="LCA">Saint Lucia</option>
+                <option value="LIE">Liechtenstein</option>
+                <option value="LKA">Sri Lanka</option>
+                <option value="LSO">Lesotho</option>
+                <option value="LTU">Lithuania</option>
+                <option value="LUX">Luxembourg</option>
+                <option value="LVA">Latvia</option>
+                <option value="MAC">Macau</option>
+                <option value="MAF" selected="selected">Saint Martin</option>
+                <option value="MAR">Morocco</option>
+                <option value="MCO">Monaco</option>
+                <option value="MDA">Moldova, Republic of</option>
+                <option value="MDG">Madagascar</option>
+                <option value="MDV">Maldives</option>
+                <option value="MEX">Mexico</option>
+                <option value="MHL">Marshall Islands</option>
+                <option value="MKD">Macedonia, The Former Yugoslav Republic of</option>
+                <option value="MLI">Mali</option>
+                <option value="MLT">Malta</option>
+                <option value="MMR">Myanmar</option>
+                <option value="MNE">Montenegro</option>
+                <option value="MNG">Mongolia</option>
+                <option value="MNP">Northern Mariana Islands</option>
+                <option value="MOZ">Mozambique</option>
+                <option value="MRT" selected="selected">Mauritania</option>
+                <option value="MSR">Montserrat</option>
+                <option value="MTQ">Martinique</option>
+                <option value="MUS">Mauritius</option>
+                <option value="MWI">Malawi</option>
+                <option value="MYS">Malaysia</option>
+                <option value="MYT" selected="selected">Mayotte</option>
+                <option value="NAM" selected="selected">Namibia</option>
+                <option value="NCL" selected="selected">New Caledonia</option>
+                <option value="NER">Niger</option>
+                <option value="NFK">Norfolk Island</option>
+                <option value="NGA">Nigeria</option>
+                <option value="NIC">Nicaragua</option>
+                <option value="NIU">Niue</option>
+                <option value="NLD">Netherlands</option>
+                <option value="NOR">Norway</option>
+                <option value="NPL">Nepal</option>
+                <option value="NRU">Nauru</option>
+                <option value="NZL">New Zealand</option>
+                <option value="OMN">Oman</option>
+                <option value="PAK">Pakistan</option>
+                <option value="PAN">Panama</option>
+                <option value="PCN">Pitcairn</option>
+                <option value="PER">Peru</option>
+                <option value="PHL">Philippines</option>
+                <option value="PLW">Palau</option>
+                <option value="PNG">Papua New Guinea</option>
+                <option value="POL">Poland</option>
+                <option value="PRI">Puerto Rico</option>
+                <option value="PRK">Korea, Democratic People's Republic of</option>
+                <option value="PRT" selected="selected">Portugal</option>
+                <option value="PRY">Paraguay</option>
+                <option value="PSE">Palestinian Territory</option>
+                <option value="PYF">French Polynesia</option>
+                <option value="QAT">Qatar</option>
+                <option value="REU">Réunion</option>
+                <option value="ROU">Romania</option>
+                <option value="RUS">Russian Federation</option>
+                <option value="RWA">Rwanda</option>
+                <option value="SAU">Saudi Arabia</option>
+                <option value="SDN">Sudan</option>
+                <option value="SEN">Senegal</option>
+                <option value="SGP">Singapore</option>
+                <option value="SGS">South Georgia and the South Sandwich Islands</option>
+                <option value="SHN">Saint Helena</option>
+                <option value="SJM">Svalbard and Jan Mayen</option>
+                <option value="SLB">Solomon Islands</option>
+                <option value="SLE">Sierra Leone</option>
+                <option value="SLV">El Salvador</option>
+                <option value="SMR">San Marino</option>
+                <option value="SOM">Somalia</option>
+                <option value="SPM">Saint Pierre and Miquelon</option>
+                <option value="SRB" selected="selected">Serbia</option>
+                <option value="STP">Sao Tome and Principe </option>
+                <option value="SUR">Suriname</option>
+                <option value="SVK">Slovakia</option>
+                <option value="SVN">Slovenia</option>
+                <option value="SWE">Sweden</option>
+                <option value="SWZ">Swaziland</option>
+                <option value="SYC" selected="selected">Seychelles</option>
+                <option value="SYR">Syrian Arab Republic</option>
+                <option value="TCA">Turks and Caicos Islands</option>
+                <option value="TCD">Chad</option>
+                <option value="TGO">Togo</option>
+                <option value="THA">Thailand</option>
+                <option value="TJK">Tajikistan</option>
+                <option value="TKL">Tokelau</option>
+                <option value="TKM">Turkmenistan</option>
+                <option value="TLS">Timor-Leste</option>
+                <option value="TON">Tonga</option>
+                <option value="TTO" selected="selected">Trinidad and Tobago</option>
+                <option value="TUN">Tunisia</option>
+                <option value="TUR">Turkey</option>
+                <option value="TUV">Tuvalu</option>
+                <option value="TWN">Taiwan</option>
+                <option value="TZA">Tanzania, United Republic of</option>
+                <option value="UGA">Uganda</option>
+                <option value="UKR">Ukraine</option>
+                <option value="UMI">United States Minor Outlying Islands</option>
+                <option value="URY">Uruguay</option>
+                <option value="USA">United States</option>
+                <option value="UZB">Uzbekistan</option>
+                <option value="VAT">Holy See (Vatican City State)</option>
+                <option value="VCT">Saint Vincent and the Grenadines</option>
+                <option value="VEN">Venezuela</option>
+                <option value="VGB">Virgin Islands, British</option>
+                <option value="VIR">Virgin Islands, U.S.</option>
+                <option value="VNM">Viet Nam</option>
+                <option value="VUT">Vanuatu</option>
+                <option value="WLF">Wallis and Futuna</option>
+                <option value="WSM">Samoa</option>
+                <option value="YEM">Yemen</option>
+                <option value="ZAF" selected="selected">South Africa</option>
+                <option value="ZMB">Zambia</option>
+                <option value="ZWE">Zimbabwe</option></select>
+            </div>
+
+            <div class="ui-helper-clearfix"></div>
+
+            <div id="uiControls">
+                <button id="btnRefresh">Refresh</button>
+                <button id="btnToggleOriginal">Toggle original element</button>
+            </div>
+
+            <div id="debug_simple"></div>
+        </div>
+        
+        <div id="usage_disabled">
+            <h2>Disabled options</h2>
+            <div>
+            <select id="multiselect_disabled" class="multiselect" multiple="multiple">
+                <option value="And">Andromeda</option>
+                <option value="Ant" disabled="disabled">Antlia</option>
+                <option value="Aps" disabled="disabled">Apus</option>
+                <option value="Aqr">Aquarius</option>
+                <option value="Aql">Aquila</option>
+                <option value="Ara" disabled="disabled">Ara</option>
+                <option value="Ari">Aries</option>
+                <option value="Aur">Auriga</option>
+                <option value="Boo">Bootes</option>
+                <option value="Cae" disabled="disabled">Caelum</option>
+                <option value="Cam">Camelopardalis</option>
+                <option value="Cnc">Cancer</option>
+                <option value="CVn">Canes Venatici</option>
+                <option value="CMa" disabled="disabled">Canis Major</option>
+                <option value="CMi" disabled="disabled">Canis Minor</option>
+                <option value="Cap">Capricornus</option>
+                <option value="Car">Carina</option>
+                <option value="Cas">Cassiopeia</option>
+                <option value="Cen">Centaurus</option>
+                <option value="Cep">Cepheus</option>
+                <option value="Cet">Cetus</option>
+                <option value="Cha" disabled="disabled">Chamaleon</option>
+                <option value="Cir" disabled="disabled">Circinus</option>
+                <option value="Col" disabled="disabled">Columba</option>
+                <option value="Com" disabled="disabled">Coma Berenices</option>
+                <option value="CrA" disabled="disabled">Corona Australis</option>
+                <option value="CrB" disabled="disabled">Corona Borealis</option>
+                <option value="Crv" disabled="disabled">Corvus</option>
+                <option value="Crt" disabled="disabled">Crater</option>
+                <option value="Cru" disabled="disabled">Crux</option>
+                <option value="Cyg">Cygnus</option>
+                <option value="Del" disabled="disabled">Delphinus</option>
+                <option value="Dor" disabled="disabled">Dorado</option>
+                <option value="Dra">Draco</option>
+                <option value="Equ" disabled="disabled">Equuleus</option>
+                <option value="Eri">Eridanus</option>
+                <option value="For" disabled="disabled">Fornax</option>
+                <option value="Gem">Gemini</option>
+                <option value="Gru" disabled="disabled">Grus</option>
+                <option value="Her">Hercules</option>
+                <option value="Hor" disabled="disabled">Horologium</option>
+                <option value="Hya">Hydra</option>
+                <option value="Hyi" disabled="disabled">Hydrus</option>
+                <option value="Ind" disabled="disabled">Indus</option>
+                <option value="Lac" disabled="disabled">Lacerta</option>
+                <option value="Leo">Leo</option>
+                <option value="LMi" disabled="disabled">Leo Minor</option>
+                <option value="Lep" disabled="disabled">Lepus</option>
+                <option value="Lib">Libra</option>
+                <option value="Lup" disabled="disabled">Lupus</option>
+                <option value="Lyn">Lynx</option>
+                <option value="Lyr" disabled="disabled">Lyra</option>
+                <option value="Men" disabled="disabled">Mensa</option>
+                <option value="Mic" disabled="disabled">Microscopium</option>
+                <option value="Mon">Monoceros</option>
+                <option value="Mus" disabled="disabled">Musca</option>
+                <option value="Nor" disabled="disabled">Norma</option>
+                <option value="Oct" disabled="disabled">Octans</option>
+                <option value="Oph">Ophiucus</option>
+                <option value="Ori">Orion</option>
+                <option value="Pav" disabled="disabled">Pavo</option>
+                <option value="Peg">Pegasus</option>
+                <option value="Per">Perseus</option>
+                <option value="Phe">Phoenix</option>
+                <option value="Pic" disabled="disabled">Pictor</option>
+                <option value="Psc">Pisces</option>
+                <option value="PsA" disabled="disabled">Pisces Austrinus</option>
+                <option value="Pup">Puppis</option>
+                <option value="Pyx" disabled="disabled">Pyxis</option>
+                <option value="Ret" disabled="disabled">Reticulum</option>
+                <option value="Sge" disabled="disabled">Sagitta</option>
+                <option value="Sgr">Sagittarius</option>
+                <option value="Sco">Scorpius</option>
+                <option value="Scl">Sculptor</option>
+                <option value="Sct" disabled="disabled">Scutum</option>
+                <option value="Ser">Serpens</option>
+                <option value="Sex" disabled="disabled">Sextans</option>
+                <option value="Tau">Taurus</option>
+                <option value="Tel" disabled="disabled">Telescopium</option>
+                <option value="Tri" disabled="disabled">Triangulum</option>
+                <option value="TrA" disabled="disabled">Triangulum Australe</option>
+                <option value="Tuc" disabled="disabled">Tucana</option>
+                <option value="UMa">Ursa Major</option>
+                <option value="UMi" disabled="disabled">Ursa Minor</option>
+                <option value="Vel">Vela</option>
+                <option value="Vir">Virgo</option>
+                <option value="Vol" disabled="disabled">Volans</option>
+                <option value="Vul" disabled="disabled">Vulpecula</option></select>
+            </div>
+            
+            <div class="ui-helper-clearfix"></div>
+        </div>
+
+        <div id="usage_groups">
+            <h2>Group related options</h2>
+            <div>
+            <select id="multiselect_groups" class="multiselect" multiple="multiple">
+            <optgroup label="Australia">
+                <option value="Holden">Holden</option>
+            </optgroup><optgroup label="Belgium">
+                <option value="Gillet">Gillet</option>
+            </optgroup><optgroup label="Brazil">
+                <option value="Agrale">Agrale</option>
+                <option value="Lobini">Lobini</option>
+                <option value="TAC Motors">TAC Motors</option>
+                <option value="Troller">Troller</option>
+            <optgroup><optgroup label="Canada">
+                <option value="Bricklin">Bricklin</option>
+                <option value="Studebaker">Studebaker</option>
+            <optgroup><optgroup label="China">
+            <optgroup><optgroup label="Czech Republic">
+                <option value="Avia">Avia</option>
+                <option value="Kaipan">Kaipan</option>
+                <option value="Praga">Praga</option>
+                <option value="Skoda Auto">Skoda Auto</option>
+                <option value="Tatra">Tatra</option>
+            <optgroup><optgroup label="France">
+                <option value="ACMA">ACMA</option>
+                <option value="Aixam">Aixam</option>
+                <option value="Bugatti">Bugatti</option>
+                <option value="Citroen">Citroen</option>
+                <option value="Cottin & Desgouttes">Cottin & Desgouttes</option>
+                <option value="Facel Vega">Facel Vega</option>
+                <option value="Matra">Matra</option>
+                <option value="Peugeot">Peugeot</option>
+                <option value="Renault">Renault</option>
+            <optgroup><optgroup label="Germany">
+                <option value="Audi">Audi</option>
+                <option value="AWZ">AWZ</option>
+                <option value="Barkas">Barkas</option>
+                <option value="Bitter">Bitter</option>
+                <option value="BMW">BMW</option>
+                <option value="Borgward">Borgward</option>
+                <option value="Büssing">Büssing</option>
+                <option value="DKW">DKW</option>
+                <option value="Glas">Glas</option>
+                <option value="Goliath">Goliath</option>
+                <option value="Hansa">Hansa</option>
+                <option value="Heinkel">Heinkel</option>
+                <option value="Horch">Horch</option>
+                <option value="Lloyd">Lloyd</option>
+                <option value="Maybach">Maybach</option>
+                <option value="MAN">MAN</option>
+                <option value="Mercedes-Benz">Mercedes-Benz</option>
+                <option value="Multicar">Multicar</option>
+                <option value="NAG">NAG</option>
+                <option value="Neoplan">Neoplan</option>
+                <option value="Opel">Opel</option>
+                <option value="Porsche">Porsche</option>
+                <option value="Robur">Robur</option>
+                <option value="Simson">Simson</option>
+                <option value="Trabant">Trabant</option>
+                <option value="Volkswagen">Volkswagen</option>
+                <option value="Wanderer">Wanderer</option>
+                <option value="Wartburg">Wartburg</option>
+            <optgroup><optgroup label="India">
+                <option value="Ashok Leyland">Ashok Leyland</option>
+                <option value="Chinkara Motors">Chinkara Motors</option>
+                <option value="DC Design">DC Design</option>
+                <option value="Force Motors">Force Motors</option>
+                <option value="Hindustan Motors">Hindustan Motors</option>
+                <option value="ICML">ICML</option>
+                <option value="Mahindra & Mahindra Limited">Mahindra & Mahindra Limited</option>
+                <option value="Maruti Suzuki">Maruti Suzuki</option>
+                <option value="Premier Automobiles Limited">Premier Automobiles Limited</option>
+                <option value="Tata Motors">Tata Motors</option>
+                <option value="SML ISUZU">SML ISUZU</option>
+            <optgroup><optgroup label="Iran">
+                <option value="Bahman Group">Bahman Group</option>
+                <option value="IKCO (Iran Khodro)">IKCO (Iran Khodro)</option>
+                <option value="Kerman Motors">Kerman Motors</option>
+                <option value="Kish Khodro">Kish Khodro</option>
+                <option value="MVM">MVM</option>
+                <option value="Pars Khodro">Pars Khodro</option>
+                <option value="SAIPA">SAIPA</option>
+            <optgroup><optgroup label="Italy">
+                <option value="Alfa Romeo">Alfa Romeo</option>
+                <option value="DR Motor">DR Motor</option>
+                <option value="Ferrari">Ferrari</option>
+                <option value="Fiat">Fiat</option>
+                <option value="Intermeccanica">Intermeccanica</option>
+                <option value="Lamborghini">Lamborghini</option>
+                <option value="Lancia">Lancia</option>
+                <option value="Maserati">Maserati</option>
+                <option value="Pagani">Pagani</option>
+                <option value="Siata">Siata</option>
+                <option value="Vignale">Vignale</option>
+            <optgroup><optgroup label="Japan">
+                <option value="Acura">Acura</option>
+                <option value="Daihatsu">Daihatsu</option>
+                <option value="Datsun">Datsun</option>
+                <option value="Hino">Hino</option>
+                <option value="Honda">Honda</option>
+                <option value="Infiniti">Infiniti</option>
+                <option value="Isuzu">Isuzu</option>
+                <option value="Lexus">Lexus</option>
+                <option value="Mazda">Mazda</option>
+                <option value="Mitsubishi Motors">Mitsubishi Motors</option>
+                <option value="Nissan">Nissan</option>
+                <option value="Subaru">Subaru</option>
+                <option value="Suzuki">Suzuki</option>
+                <option value="Toyota">Toyota</option>
+                <option value="Yamaha">Yamaha</option>
+            <optgroup><optgroup label="Malaysia">
+                <option value="Naza">Naza</option>
+                <option value="Perodua">Perodua</option>
+                <option value="Proton">Proton</option>
+            <optgroup><optgroup label="Mexico">
+                <option value="Mastretta">Mastretta</option>
+                <option value="DINA">DINA</option>
+                <option value="King">King</option>
+                <option value="Tranvias-Cimex">Tranvias-Cimex</option>
+                <option value="Vehizero">Vehizero</option>
+                <option value="Carabela">Carabela</option>
+                <option value="Italika">Italika</option>
+            <optgroup><optgroup label="Monaco">
+                <option value="Venturi">Venturi</option>
+            <optgroup><optgroup label="Netherlands">
+                <option value="DAF">DAF</option>
+                <option value="Spyker">Spyker</option>
+            <optgroup><optgroup label="Romania">
+                <option value="Automobile Dacia">Automobile Dacia</option>
+            <optgroup><optgroup label="Russia">
+                <option value="Avtoframos">Avtoframos</option>
+                <option value="GAZ">GAZ</option>
+                <option value="Kamaz">Kamaz</option>
+                <option value="Lada">Lada</option>
+                <option value="Marussia Motors">Marussia Motors</option>
+                <option value="Volga">Volga</option>
+            <optgroup><optgroup label="Serbia">
+                <option value="Zastava Automobiles">Zastava Automobiles</option>
+            <optgroup><optgroup label="South Africa">
+                <option value="G.S.M.">G.S.M.</option>
+            <optgroup><optgroup label="South Korea">
+                <option value="GM Korea">GM Korea</option>
+                <option value="Hyundai Motor Company">Hyundai Motor Company</option>
+                <option value="Kia Motors">Kia Motors</option>
+                <option value="Renault Samsung Motors">Renault Samsung Motors</option>
+                <option value="SsangYong Motor Company">SsangYong Motor Company</option>
+            <optgroup><optgroup label="Spain">
+                <option value="SEAT">SEAT</option>
+            <optgroup><optgroup label="Sweden">
+                <option value="Koenigsegg">Koenigsegg</option>
+                <option value="Jösse Car">Jösse Car</option>
+                <option value="Saab">Saab</option>
+                <option value="Volvo">Volvo</option>
+            <optgroup><optgroup label="Switzerland">
+                <option value="Enzmann">Enzmann</option>
+            <optgroup><optgroup label="United Kingdom">
+                <option value="AC">AC</option>
+                <option value="Allard">Allard</option>
+                <option value="Alvis">Alvis</option>
+                <option value="Armstrong Siddeley">Armstrong Siddeley</option>
+                <option value="Aston Martin">Aston Martin</option>
+                <option value="Austin-Healey">Austin-Healey</option>
+                <option value="Bentley">Bentley</option>
+                <option value="Bristol">Bristol</option>
+                <option value="British Leyland">British Leyland</option>
+                <option value="Caterham">Caterham</option>
+                <option value="Daimler">Daimler</option>
+                <option value="Elva">Elva</option>
+                <option value="Ginetta">Ginetta</option>
+                <option value="Gordon Keeble">Gordon Keeble</option>
+                <option value="Hillman">Hillman</option>
+                <option value="Humber">Humber</option>
+                <option value="Jaguar">Jaguar</option>
+                <option value="Jensen">Jensen</option>
+                <option value="Jowett">Jowett</option>
+                <option value="Lanchester">Lanchester</option>
+                <option value="Land Rover">Land Rover</option>
+                <option value="Lotus">Lotus</option>
+                <option value="Marcos">Marcos</option>
+                <option value="MG">MG</option>
+                <option value="MG Cars">MG Cars</option>
+                <option value="Mini Cooper">Mini Cooper</option>
+                <option value="Morgan">Morgan</option>
+                <option value="Morris">Morris</option>
+                <option value="Noble">Noble</option>
+                <option value="Riley">Riley</option>
+                <option value="Rolls Royce">Rolls Royce</option>
+                <option value="Rover">Rover</option>
+                <option value="Singer">Singer</option>
+                <option value="Sunbeam">Sunbeam</option>
+                <option value="Triumph">Triumph</option>
+                <option value="Trojan">Trojan</option>
+                <option value="TVR">TVR</option>
+                <option value="Vauxhall">Vauxhall</option>
+                <option value="Wolseley">Wolseley</option>
+            <optgroup><optgroup label="United States">
+                <option value="Buick">Buick</option>
+                <option value="Cadillac">Cadillac</option>
+                <option value="Chevrolet">Chevrolet</option>
+                <option value="Coda">Coda</option>
+                <option value="Chrysler">Chrysler</option>
+                <option value="DeLorean Motor Company">DeLorean Motor Company</option>
+                <option value="Dodge">Dodge</option>
+                <option value="Fisker">Fisker</option>
+                <option value="Ford">Ford</option>
+                <option value="Global Electric Motorcars">Global Electric Motorcars</option>
+                <option value="GMC">GMC</option>
+                <option value="International Harvester">International Harvester</option>
+                <option value="Jeep">Jeep</option>
+                <option value="Lincoln">Lincoln</option>
+                <option value="Navistar International">Navistar International</option>
+                <option value="Scion">Scion</option>
+                <option value="Tesla">Tesla</option>
+            </optgroup>
+            </select>
+            </div>
+            
+            <div class="ui-helper-clearfix"></div>
+        </div>
+        
+    </div>
+
+    </body>
+</html>
+

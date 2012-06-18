@@ -12,7 +12,7 @@ This widget is a complete rewrite of the [previous version](https://github.com/m
 * didn't support item groups
 * etc.
 
-Also, it quickly became slow when loading a few hundred items and some branches and [drag](https://github.com/michael/multiselect/issues/91) [and](https://github.com/michael/multiselect/issues/124) [drop](https://github.com/michael/multiselect/issues/8) issues.
+Also, it quickly became slow when loading a few hundred items and some branches had [drag](https://github.com/michael/multiselect/issues/91) [and](https://github.com/michael/multiselect/issues/124) [drop](https://github.com/michael/multiselect/issues/8) issues.
 
 **Note :** This widget is still under development and all it's features has *not* been fully tested yet!
 
@@ -45,7 +45,7 @@ TODO
 ----
 
 * <del>add disabled items support</del>
-* add grouped items support (*in development*)
+* <del>add (collapsible) grouped items support</del>
 * add custom item rendering support
 * test in all browsers
 * etc.
