@@ -46,7 +46,7 @@ TODO
 
 * <del>add disabled items support</del>
 * <del>add (collapsible) grouped items support</del>
-* (de)select all group options
+* <del>(de)select all group options</del>
 * add custom item rendering support (*untested*)
 * test in all browsers
 * etc.

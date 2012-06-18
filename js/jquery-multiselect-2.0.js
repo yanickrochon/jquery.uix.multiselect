@@ -49,7 +49,7 @@
                 .append(
                     $('<div></div>').addClass('multiselect-selected-list')
                         .append( $('<div></div>').addClass('ui-widget-header ui-corner-tl')
-                            .append( btnDeselectAll = $('<button></button>').addClass('uix-control').attr('title', this._t('deselectAll'))
+                            .append( btnDeselectAll = $('<button></button>').addClass('uix-control-right').attr('title', this._t('deselectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-e'}, text:false})
                                 .click(function() { that._optionCache.setSelectedAll(false); })
                             )
@@ -60,11 +60,11 @@
                 .append(
                     $('<div></div>').addClass('multiselect-available-list')
                         .append( $('<div></div>').addClass('ui-widget-header ui-corner-tr')//.text('Available items')
-                            .append( btnSelectAll = $('<button></button>').addClass('uix-control').attr('title', this._t('selectAll'))
+                            .append( btnSelectAll = $('<button></button>').addClass('uix-control-right').attr('title', this._t('selectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false}) 
                                 .click(function() { that._optionCache.setSelectedAll(true); })
                             )
-                            .append( btnSearch = $('<button></button').addClass('uix-control').attr('title', this._t('search'))
+                            .append( btnSearch = $('<button></button').addClass('uix-control-right').attr('title', this._t('search'))
                                 .button({icons:{primary:'ui-icon-search'}, text:false})
                                 .click(function() {
                                     if (that._searchField.is(':visible')) {
@@ -484,41 +484,71 @@
             return e;
         },
         
-        _updateGroupElements: function(index, eData, selected) {
+        _isOptionCollapsed: function(eData, selected) {
+            return eData.optionGroup && this._groups[eData.optionGroup].collapsed[selected?0:1];
+        },
+        
+        _countGroupElements: function(gData) {
+            var count = [0, 0];  // selected, available
+            for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
+                count[this._elements[i].optionElement.attr('selected')?0:1]++;
+            }
+            return count;
+        },
+        
+        _updateGroupElements: function(index, groupName, selected) {
             var that = this;
-            var groupName = eData.optionGroup;
             var gData = this._groups[groupName];
             var addKey = (selected ? 'selected' : 'available') + 'Info';
             var remKey = (selected ? 'available' : 'selected') + 'Info';
+            
+            var count = this._countGroupElements(gData);
             
             if (!gData[addKey]) {
                 gData[addKey] = {
                     element: $('<div></div>')
                         .addClass('ui-widget-header ui-priority-secondary group-element')
-                        .append($('<span></span>').addClass('label').text(groupName + ' (' + gData.count + ')')),
+                        .append($('<span></span>').addClass('label').text(groupName + ' (' + count[selected?0:1] + ')'))
+                        .append( $('<button></button>').addClass('uix-control-right').attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
+                            .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
+                            .click(function() {
+                                that._bufferedMode(false);
+                                for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
+                                    that.setSelected(i, !selected, true);
+                                }
+                                count = that._countGroupElements(gData);
+                                that._updateHeaders();
+                                gData[addKey].element.children(':eq(1)').text(groupName + ' (' + count[selected?0:1] + ')');
+                                that._bufferedMode(false);
+                                that._widget.element.trigger('change', this._createEventUI({ itemIndex:[gData.startIndex,gData.startIndex+gData.count], selected:!selected}) );
+                            })
+                        ),
                     optIndex: index
                 };
                 if (this._widget.options.collapsibleGroups) {
-                    gData[addKey].element.prepend($('<span></span>').addClass('ui-icon ui-icon-plus')
-                        .click(function() {
-                            var e, c = $(this).hasClass('ui-icon-plus');
-                            $(this).removeClass('ui-icon-' + (c ? 'plus' : 'minus'))
-                                   .addClass('ui-icon-' + (c ? 'minus' : 'plus'));
-                            for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
-                                e = that._elements[i];
-                                e.collapsed = c;
-                                e.listElement[c || e.filtered ? 'hide' : 'show']();
-                            }
-                        })
-                    );
+                    gData[addKey].element
+                        .prepend( $('<button></button>').addClass('uix-control-left').attr('title', this._widget._t('collapseGroup'))
+                            .button({icons:{primary:'ui-icon-plus'}, text:false})
+                            .click(function() { 
+                                var e, c = !gData.collapsed[selected?0:1];
+                                gData.collapsed[selected?0:1] = c;
+                                $(this).button('option', 'icons', {primary:'ui-icon-' + (c ? 'minus' : 'plus')});
+                                for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
+                                    e = that._elements[i];
+                                    if (!!e.optionElement.attr('selected') == selected) {
+                                        e.listElement[c || e.filtered ? 'hide' : 'show']();
+                                    }
+                                }
+                            })
+                        );
                 }
-                gData[addKey].element.insertBefore(eData.listElement);
+                gData[addKey].element.insertBefore(this._elements[index].listElement);
             } else {
                 // update group name and count
-                gData[addKey].element.children(':eq(1)').text(groupName + ' (' + gData.count + ')');
+                gData[addKey].element.children(':eq(1)').text(groupName + ' (' + count[selected?0:1] + ')');
                 if (gData[addKey].optIndex > index) {
                     gData[addKey].optIndex = index;
-                    gData[addKey].element.insertBefore(eData.listElement);
+                    gData[addKey].element.insertBefore(this._elements[index].listElement);
                 } else if (gData[addKey].optIndex == index) {
                     var shouldBeVisible = false;
                     // try to find if we still have something to keep the group element attached
@@ -538,6 +568,7 @@
                 }
             }
             if (gData[remKey]) {
+                gData[remKey].element.children(':eq(1)').text(groupName + ' (' + count[!selected?0:1] + ')');
                 if (gData[remKey].optIndex == index) {
                     var shouldBeVisible = false;
                     //alert( gData[remKey].optIndex );
@@ -559,13 +590,6 @@
                     }
                 }
             }
-            /*
-            var k = (selected ? 'selected' : 'available') + 'Header';
-            if (!this._groups[gName][k]) {
-                this._groups[gName][k] = 
-            }
-            return this._groups[gName][k];
-            */
         },
 
         _appendToList: function(index, eData) {
@@ -593,13 +617,15 @@
             }
 
             if (eData.optionGroup) {
-                this._updateGroupElements(index, eData, selected);
+                this._updateGroupElements(index, eData.optionGroup, selected);
             }
 
-            if ((selected || !eData.filtered) && !eData.collapsed) {
+            if ((selected || !eData.filtered) && !this._isOptionCollapsed(eData, selected)) {
                 if (this._moveEffect && this._moveEffect.fn) {
                     eData.listElement.show(this._moveEffect.fn, this._moveEffect.options, this._moveEffect.speed);
                 } else {
+                    console.log(selected);
+                    console.log(this._isOptionCollapsed(eData, selected) );
                     eData.listElement.show();
                 }
             }
@@ -638,7 +664,6 @@
         prepare: function(optElement, optGroup) {
             var eData = {
                 filtered: false,
-                collapsed: false,
                 listElement: null,
                 optionElement: optElement,
                 optionGroup: optGroup
@@ -670,7 +695,7 @@
                 e = this._elements[i];
                 if (e.optionGroup) {
                     if (!this._groups[e.optionGroup]) {
-                        this._groups[e.optionGroup] = {startIndex:i, count:0, selectedInfo:null, availableInfo:null};
+                        this._groups[e.optionGroup] = {startIndex:i, count:0, collapsed:[false, false], selectedInfo:null, availableInfo:null};
                     } else if (this._groups[e.optionGroup].startIndex > i) {
                         this._groups[e.optionGroup].startIndex = i;
                     }
@@ -713,11 +738,13 @@
                 text = false;
             }
 
+            var eData, filtered, selected;
             for (var i=0; i<count; i++) {
-                var eData = this._elements[i];
-                var filtered = !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
+                eData = this._elements[i];
+                filtered = !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
+                selected = eData.listElement.data('selected');
 
-                if (!eData.listElement.data('selected') && eData.filtered != filtered && !eData.collapsed) {
+                if (!selected && (eData.filtered != filtered) && !this._isOptionCollapsed(eData, selected)) {
                     eData.listElement[filtered ? 'hide' : 'show']();
                 }
 
@@ -794,7 +821,7 @@
             this._widget._updateHeaders();
             this._bufferedMode(false);
 
-            this._widget.element.trigger('change', this._createEventUI({ itemIndex:-1, selected:selected }) );
+            this._widget.element.trigger('change', this._createEventUI({ itemIndex:[0,this._elements.length], selected:selected }) );
         }
 
     };
@@ -845,9 +872,13 @@
             itemsAvailable_plural: '{count} available options',
             //itemsAvailable_plural_two: ...
             //itemsAvailable_plural_few: ...
-            selectAll: 'Select all',
-            deselectAll: 'Deselect all',
-            search: 'Search options',
+            selectAll: 'Select All',
+            deselectAll: 'Deselect All',
+            search: 'Search Options',
+            collapseGroup: 'Collapse Group',
+            expandGroup: 'Expand Group',
+            selectAllGroup: 'Select All Group',
+            deselectAllGroup: 'Deselect All Group'
         }
     };
 
