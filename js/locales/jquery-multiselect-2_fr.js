@@ -16,23 +16,23 @@
 
 (function($) {
 
-	$.uix.multiselect.i18n['fr'] = {
-		itemsSelected: '{count} option sélectionné',            // 0, 1
-		itemsSelected_plural: '{count} options sélectionnés',   // n
-		//itemsSelected_plural_two: ...                      // 2
-		//itemsSelected_plural_few: ...                      // 3, 4
-		itemsAvailable: '{count} option disponible',
-		itemsAvailable_plural: '{count} options disponibles',
-		//itemsAvailable_plural_two: ...
-		//itemsAvailable_plural_few: ...
-		selectAll: 'Sélectionner tout',
-		deselectAll: 'Désélectionner tout',
-		search: 'Rechercher les options',
-	};
+    $.uix.multiselect.i18n['fr'] = {
+        itemsSelected: '{count} option sélectionné',            // 0, 1
+        itemsSelected_plural: '{count} options sélectionnés',   // n
+        //itemsSelected_plural_two: ...                         // 2
+        //itemsSelected_plural_few: ...                         // 3, 4
+        itemsAvailable: '{count} option disponible',
+        itemsAvailable_plural: '{count} options disponibles',
+        //itemsAvailable_plural_two: ...
+        //itemsAvailable_plural_few: ...
+        selectAll: 'Sélectionner tout',
+        deselectAll: 'Désélectionner tout',
+        search: 'Rechercher les options',
+    };
 
-	// link locales
-	$.uix.multiselect.i18n['fr_CA'] = $.uix.multiselect.i18n['fr'];
-	$.uix.multiselect.i18n['fr_FR'] = $.uix.multiselect.i18n['fr'];
-	// ...
+    // link locales
+    $.uix.multiselect.i18n['fr_CA'] = $.uix.multiselect.i18n['fr'];
+    $.uix.multiselect.i18n['fr_FR'] = $.uix.multiselect.i18n['fr'];
+    // ...
 
 })(jQuery);
