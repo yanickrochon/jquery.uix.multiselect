@@ -11,10 +11,11 @@
 .uix-multiselect .ui-widget-header .uix-search { float:right; height:14px; font-size:80%; }
 .uix-multiselect .uix-list-container { position:relative; overflow:auto; }
 .uix-multiselect .uix-list-container .ui-priority-secondary { padding-right:0; }
-.uix-multiselect .group-element { padding-left:0; }
-.uix-multiselect .group-element .label { margin:0 3px; }
+.uix-multiselect .group-element { padding-left:0;  white-space:nowrap; overflow:hidden; }
+.uix-multiselect .group-element .label { margin:0 3px;  white-space:nowrap; overflow:hidden; }
 .uix-multiselect .group-element .ui-icon { float:left; cursor:pointer; }
 .uix-multiselect .option-element, .dragged-element { cursor:pointer; }
+.uix-multiselect .option-element.ui-state-disabled { font-style:italic; }
 .dragged-element, .dragged-grouped-element { padding:1px 3px; }
 .dragged-grouped-element { padding-left:16px; }
 .uix-multiselect .grouped-option { position:relative; padding-left:16px }

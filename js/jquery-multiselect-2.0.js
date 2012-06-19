@@ -515,7 +515,6 @@
                 gData[addKey] = {
                     element: $('<div></div>')
                         .addClass('ui-widget-header ui-priority-secondary group-element')
-                        .append($('<span></span>').addClass('label').text(groupName + ' (' + count[selected?0:1] + ')'))
                         .append( $('<button></button>').addClass('uix-control-right')
                             .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
                             .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
@@ -529,11 +528,14 @@
                                 }
                                 count = that._countGroupElements(gData);
                                 that._widget._updateHeaders();
-                                gData[addKey].element.children(':eq(1)').text(groupName + ' (' + count[selected?0:1] + ')');
+                                gData[addKey].element.children(':last').text(groupName + ' (' + count[selected?0:1] + ')');
                                 that._bufferedMode(false);
                                 that._widget.element.trigger('change', this._createEventUI({ itemIndex:[gData.startIndex,gData.startIndex+gData.count], selected:!selected}) );
                             })
-                        ),
+                        )
+                        .append($('<span></span>').addClass('label')
+                            .text(groupName + ' (' + count[selected?0:1] + ')')
+                            .attr('title', groupName + ' (' + count[selected?0:1] + ')')),
                     optIndex: index
                 };
                 if (this._widget.options.collapsibleGroups) {
@@ -558,7 +560,9 @@
                 gData[addKey].element.insertBefore(this._elements[index].listElement);
             } else {
                 // update group name and count
-                gData[addKey].element.children(':eq(1)').text(groupName + ' (' + count[selected?0:1] + ')');
+                gData[addKey].element.children(':last')
+                    .text(groupName + ' (' + count[selected?0:1] + ')')
+                    .attr('title', groupName + ' (' + count[selected?0:1] + ')');
                 if (gData[addKey].optIndex > index) {
                     gData[addKey].optIndex = index;
                     gData[addKey].element.insertBefore(this._elements[index].listElement);
@@ -581,7 +585,9 @@
                 }
             }
             if (gData[remKey]) {
-                gData[remKey].element.children(':eq(1)').text(groupName + ' (' + count[!selected?0:1] + ')');
+                gData[remKey].element.children(':last')
+                    .text(groupName + ' (' + count[!selected?0:1] + ')')
+                    .attr('title', groupName + ' (' + count[!selected?0:1] + ')');
                 if (gData[remKey].optIndex == index) {
                     var shouldBeVisible = false;
                     //alert( gData[remKey].optIndex );

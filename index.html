@@ -75,6 +75,10 @@
                 padding: 8px;
                 margin-top: 16px;
             }
+            .example-container {
+                overflow:visible;
+                width:100%;
+            }
         </style>
     </head>
     <body>
@@ -90,7 +94,7 @@
 
         <div id="usage_simple">
             <h2>Simple usage</h2>
-            <div>
+            <div class="example-container ui-helper-clearfix">
             <select id="multiselect_simple" class="multiselect" multiple="multiple">
                 <option value="ABW">Aruba</option>
                 <option value="AFG">Afghanistan</option>
@@ -340,8 +344,6 @@
                 <option value="ZWE">Zimbabwe</option></select>
             </div>
 
-            <div class="ui-helper-clearfix"></div>
-
             <div id="uiControls">
                 <button id="btnRefresh">Refresh</button>
                 <button id="btnToggleOriginal">Toggle original element</button>
@@ -352,7 +354,7 @@
         
         <div id="usage_disabled">
             <h2>Disabled options</h2>
-            <div>
+            <div class="example-container ui-helper-clearfix">
             <select id="multiselect_disabled" class="multiselect" multiple="multiple">
                 <option value="And">Andromeda</option>
                 <option value="Ant" disabled="disabled">Antlia</option>
@@ -449,7 +451,7 @@
 
         <div id="usage_groups">
             <h2>Group related options</h2>
-            <div>
+            <div class="example-container ui-helper-clearfix">
             <select id="multiselect_groups" class="multiselect" multiple="multiple">
             <optgroup label="Australia">
                 <option value="Holden">Holden</option>
