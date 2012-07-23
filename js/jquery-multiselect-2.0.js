@@ -72,7 +72,8 @@
                                 .attr('data-localekey', 'search')
                                 .attr('title', this._t('search'))
                                 .button({icons:{primary:'ui-icon-search'}, text:false})
-                                .click(function() {
+                                .click(function(e) {
+                                    e.preventDefault(); e.stopPropagation();
                                     if (that._searchField.is(':visible')) {
                                         var b = $(this);
                                         avListHeader.css('visibility', 'visible').fadeTo('fast', 1.0);
@@ -85,6 +86,7 @@
                                         that._searchField.show('slide', {direction: 'right'}, 200, function() { $(this).focus(); });
                                         that.search();
                                     }
+                                    return false;
                                 })
                             )
                             .append( this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-left').hide() 
@@ -519,7 +521,8 @@
                             .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
                             .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
                             .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
-                            .click(function() {
+                            .click(function(e) {
+                                e.preventDefault(); e.stopPropagation(); 
                                 that._bufferedMode(false);
                                 for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
                                     if (!that._elements[i].filtered) {
@@ -531,6 +534,7 @@
                                 gData[addKey].element.children(':last').text(groupName + ' (' + count[selected?0:1] + ')');
                                 that._bufferedMode(false);
                                 that._widget.element.trigger('change', this._createEventUI({ itemIndex:[gData.startIndex,gData.startIndex+gData.count], selected:!selected}) );
+                                return false;
                             })
                         )
                         .append($('<span></span>').addClass('label')
@@ -544,7 +548,8 @@
                             .attr('data-localekey', 'collapseGroup')
                             .attr('title', this._widget._t('collapseGroup'))
                             .button({icons:{primary:'ui-icon-plus'}, text:false})
-                            .click(function() { 
+                            .click(function(e) { 
+                                e.preventDefault(); e.stopPropagation(); 
                                 var e, c = !gData.collapsed[selected?0:1];
                                 gData.collapsed[selected?0:1] = c;
                                 $(this).button('option', 'icons', {primary:'ui-icon-' + (c ? 'minus' : 'plus')});
@@ -554,6 +559,7 @@
                                         e.listElement[c || e.filtered ? 'hide' : 'show']();
                                     }
                                 }
+                                return false;
                             })
                         );
                 }
