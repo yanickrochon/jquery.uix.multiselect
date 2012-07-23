@@ -44,7 +44,7 @@
                     $('#multiselect_simple').multiselect('refresh');
                 });
                 $('#btnToggleOriginal_simple').click(function() {
-                    $('#multiselect_simple').toggle();
+                    $('#multiselect_simple').css('float','right').toggle();
                 });
 
                 $('#selectLocale').change(function() {
@@ -93,6 +93,7 @@
         </div>
 
         <div id="usage_simple">
+            <form action="" method="get">
             <h2>Simple usage</h2>
             <div class="example-container ui-helper-clearfix">
             <select id="multiselect_simple" class="multiselect" multiple="multiple">
@@ -343,10 +344,11 @@
                 <option value="ZMB">Zambia</option>
                 <option value="ZWE">Zimbabwe</option></select>
             </div>
+            </form>
 
             <div id="uiControls">
-                <button id="btnRefresh">Refresh</button>
-                <button id="btnToggleOriginal">Toggle original element</button>
+                <button id="btnRefresh_simple">Refresh</button>
+                <button id="btnToggleOriginal_simple">Toggle original element</button>
             </div>
 
             <div id="debug_simple"></div>
