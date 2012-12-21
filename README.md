@@ -33,11 +33,11 @@ To programmatically select/deselect, add/modify/remove items, you may access and
 
     $('selector').append("<option value='item1'>My Item 1</option>")
                  .multiselect('refresh');
-    
+
     // manually filter available options
     //   This will only render visible the available items containing 'My Item' (case insensitive)
     $('selector').multiselect('search', 'my item');
-    
+
     $('selector').multiselect('destroy');  // restore original element
 
 
@@ -47,8 +47,9 @@ TODO
 * <del>add disabled items support</del>
 * <del>add (collapsible) grouped items support</del>
 * <del>(de)select all group options</del>
+* </del>selection mode : (drag, click, dblclick, etc.)</del>
 * add custom item rendering support (*untested*)
+* sortable on selected items
 * test in all browsers (*not fully tested*)
 * code cleanup
 * etc.
-

@@ -4,17 +4,16 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>jQuery Multiselect 2.0 Example Page</title>
         <link type="text/css" href="css/common.css" rel="stylesheet" />
-        <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
+        <link type="text/css" href="css/ui-lightness/jquery-ui-1.9.2.custom.css" rel="stylesheet" />
         <link type="text/css" href="css/jquery-multiselect-2.0.css" rel="stylesheet" />
-        <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
-        <script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js"></script>
+        <script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+        <script type="text/javascript" src="js/jquery-ui-1.9.2.custom.js"></script>
         <script type="text/javascript" src="js/jquery-multiselect-2.0.js"></script>
         <script type="text/javascript" src="js/locales/jquery-multiselect-2_fr.js"></script>
-        <script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>
         <script type="text/javascript">
             $(function() {
                 //navigator.userLanguage = 'fr';
-                
+
                 $('#multiselect_simple').multiselect({
                     sortMethod: 'standard',
                     moveEffect: 'blind',
@@ -26,11 +25,11 @@
                 }).bind('multiselectsearch', function(evt, ui) {
                     $('#debug_simple').append( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
                 });
-                
+
                 $('#multiselect_disabled').multiselect();
 
                 $('#multiselect_groups').multiselect();
-                
+
 
                 if ($.fn.themeswitcher) {
                     $('#switcher')
@@ -45,6 +44,9 @@
                 });
                 $('#btnToggleOriginal_simple').click(function() {
                     $('#multiselect_simple').css('float','right').toggle();
+                });
+                $('#btnSearch_simple').click(function() {
+                    $('#multiselect_simple').multiselect('search', $('#txtSearch_simple').val());
                 });
 
                 $('#selectLocale').change(function() {
@@ -349,11 +351,13 @@
             <div id="uiControls">
                 <button id="btnRefresh_simple">Refresh</button>
                 <button id="btnToggleOriginal_simple">Toggle original element</button>
+                <input type="text" id="txtSearch_simple" />
+                <button id="btnSearch_simple">Search</button>
             </div>
 
             <div id="debug_simple"></div>
         </div>
-        
+
         <div id="usage_disabled">
             <h2>Disabled options</h2>
             <div class="example-container ui-helper-clearfix">
@@ -447,7 +451,7 @@
                 <option value="Vol" disabled="disabled">Volans</option>
                 <option value="Vul" disabled="disabled">Vulpecula</option></select>
             </div>
-            
+
             <div class="ui-helper-clearfix"></div>
         </div>
 
@@ -667,12 +671,11 @@
             </optgroup>
             </select>
             </div>
-            
+
             <div class="ui-helper-clearfix"></div>
         </div>
-        
+
     </div>
 
     </body>
 </html>
-

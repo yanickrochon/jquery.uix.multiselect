@@ -9,7 +9,7 @@
 .uix-multiselect .ui-widget-header .uix-control-right { float:right; }
 .uix-multiselect .ui-widget-header .uix-control-left { float:left; }
 .uix-multiselect .ui-widget-header .uix-search { float:right; height:14px; font-size:80%; }
-.uix-multiselect .uix-list-container { position:relative; overflow:auto; }
+.uix-multiselect .uix-list-container { position:relative; overflow:auto; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 .uix-multiselect .uix-list-container .ui-priority-secondary { padding-right:0; }
 .uix-multiselect .group-element { padding-left:0;  white-space:nowrap; overflow:hidden; }
 .uix-multiselect .group-element .label { margin:0 3px;  white-space:nowrap; overflow:hidden; }
@@ -20,5 +20,3 @@
 .dragged-grouped-element { padding-left:16px; }
 .uix-multiselect .grouped-option { position:relative; padding-left:16px }
 .uix-multiselect .grouped-option .ui-icon { position:absolute; left:0; }
-
-

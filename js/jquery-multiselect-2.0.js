@@ -3,10 +3,9 @@
  *
  * Authors:
  *  Yanick Rochon (yanick.rochon[at]gmail[dot]com)
- * 
- * Dual licensed under the MIT (MIT-LICENSE.txt)
- * and GPL (GPL-LICENSE.txt) licenses.
- * 
+ *
+ * Licensed under the MIT (MIT-LICENSE.txt) license.
+ *
  * http://mind2soft.com/labs/jquery/multiselect/
  *
  *
@@ -22,14 +21,15 @@
     // The jQuery.uix namespace will automatically be created if it doesn't exist
     $.widget("uix.multiselect", {
         options: {
-            collapsibleGroups: true,   // tells whether the option groups can be collapsed or not (default: true)
-            locale: 'auto',            // any valid locale, 'auto', or '' for default built-in strings (default: 'auto') 
+            collapsibleGroups: true,     // tells whether the option groups can be collapsed or not (default: true)
+            locale: 'auto',              // any valid locale, 'auto', or '' for default built-in strings (default: 'auto')
             moveEffect: null,          // 'blind','bounce','clip','drop','explode','fold','highlight','puff','pulsate','shake','slide' (default: null)
             moveEffectOptions: {},     // effect options (see jQuery UI documentation) (default: {})
             moveEffectSpeed: null,     // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
-            optionRenderer: false,     // a function that will return the item element to be rendered in the list (default: false)
-            splitRatio: 0.55,          // % of the left list's width of the widget total width (default 0.55)
-            sortMethod: 'standard'     // null, 'standard', 'natural'; a sort function name (see ItemComparators) (default: 'standard')
+            optionRenderer: false,       // a function that will return the item element to be rendered in the list (default: false)
+            selectionMode: 'click,d&d',  // how items can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'dblclick,d&d')
+            splitRatio: 0.55,            // % of the left list's width of the widget total width (default 0.55)
+            sortMethod: 'standard'       // null, 'standard', 'natural'; a sort function name (see ItemComparators) (default: 'standard')
         },
 
         _create: function() {
@@ -65,7 +65,7 @@
                             .append( btnSelectAll = $('<button></button>').addClass('uix-control-right')
                                 .attr('data-localekey', 'selectAll')
                                 .attr('title', this._t('selectAll'))
-                                .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false}) 
+                                .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false})
                                 .click(function(e) { e.preventDefault(); e.stopPropagation(); that._optionCache.setSelectedAll(true); return false; })
                             )
                             .append( btnSearch = $('<button></button').addClass('uix-control-right')
@@ -84,12 +84,12 @@
                                         avListHeader.fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
                                         $(this).removeClass('ui-corner-all').addClass('ui-corner-right ui-state-active');
                                         that._searchField.show('slide', {direction: 'right'}, 200, function() { $(this).focus(); });
-                                        that.search();
+                                        that._search();
                                     }
                                     return false;
                                 })
                             )
-                            .append( this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-left').hide() 
+                            .append( this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-left').hide()
                                 .focus(function() { $(this).select(); })
                                 .keyup(function() { that._searchDelayed.request(); })
                                 //
@@ -116,7 +116,6 @@
                 available: avListContent
             };
 
-            this._resize();
             this._applyListDroppable();
 
             this._optionCache = new OptionCache(this);
@@ -141,8 +140,9 @@
          */
         refresh: function(callback) {
             var that = this;
-        
+
             setTimeout(function() {
+                that._resize();
                 that._optionCache.clear();
 
                 var options = that.element[0].childNodes;
@@ -169,7 +169,7 @@
                 that._optionCache.reIndex();
 
                 if (that._searchField.is(':visible')) {
-                    that.search(null, true);
+                    that._search(null, true);
                 }
 
                 if (callback) callback();
@@ -182,21 +182,18 @@
          * undefined, the actual value from the search field is used. If 'text' is specified,
          * the search field is updated.
          *
-         * @param text   string         (optional) update the search field with this value
-         * @param silent boolean      (optional) tells whether to trigger a search (false) event or not (true) (default will trigger)
+         * @param options string|object    (optional) the search options
          */
-        search: function(text, silent) {
-            if (this._searchField.is(':visible')) {
-                if (text) {
-                    this._searchField.val(text);
-                } else {
-                    text = this._searchField.val();
-                }
-            } else {
-                text = (""+text);
+        search: function(options) {
+            if (typeof options != 'object') {
+                options = {showInput: true, text: options};
             }
 
-            this._optionCache.filter(text, silent);
+            if ((options.toggleInput != false) && !this._searchField.is(':visible')) {
+                this._buttons.search.trigger('click');
+            }
+
+            this._search(options.text, !!options.silent);
         },
 
         /**
@@ -226,21 +223,37 @@
             return _({locale:this.options.locale, key:key, plural:plural, data:data});
         },
 
+        _search: function(text, silent) {
+            if (this._searchField.is(':visible')) {
+                if (text) {
+                    this._searchField.val(text);
+                } else {
+                    text = this._searchField.val();
+                }
+            } else {
+                text = (""+text);
+            }
+
+            this._optionCache.filter(text, silent);
+        },
+
         _setLocale: function(locale) {
             if (locale == 'auto') {
-                locale = navigator.userLanguage || 
-                         navigator.language || 
-                         navigator.browserLanguage || 
-                         navigator.systemLanguage || 
+                locale = navigator.userLanguage ||
+                         navigator.language ||
+                         navigator.browserLanguage ||
+                         navigator.systemLanguage ||
                          '';
             }
             if (!$.uix.multiselect.i18n[locale]) {
-                locale = '';
+                locale = '';   // revert to default is not supported auto locale
             }
             this.options.locale = locale;
         },
 
         _applyListDroppable: function() {
+            if (this.options.selectionMode.indexOf('d&d') == -1) return;
+
             var that = this;
 
             this._lists['selected'].droppable({
@@ -251,7 +264,7 @@
                 scope: this.scope,
                 drop: function(evt, ui) {
                     var index = that._optionCache.indexOf(ui.draggable.data('option-value'));
-                    
+
                     ui.draggable.removeClass('ui-state-disabled');
                     ui.helper.remove();
 
@@ -269,7 +282,7 @@
                     var index = that._optionCache.indexOf(ui.draggable.data('option-value'));
 
                     ui.draggable.removeClass('ui-state-disabled');
-                    ui.helper.remove();                     
+                    ui.helper.remove();
 
                     that._optionCache.setSelected(index, false);
                 }
@@ -407,7 +420,7 @@
                 that._timeout = null;
                 that._lastSearchValue = that._widget._searchField.val();
 
-                that._widget.search();
+                that._widget._search();
             }, this._options.delay);
         },
         cancelLastRequest: function() {
@@ -432,6 +445,9 @@
             options: widget.options.moveEffectOptions,
             speed: widget.options.moveEffectSpeed
         };
+
+        this._selectionMode = this._widget.options.selectionMode.indexOf('dblclick') > -1 ? 'dblclick'
+                            : this._widget.options.selectionMode.indexOf('click') > -1 ? 'click' : false;
     };
 
     OptionCache.Options = {
@@ -447,10 +463,11 @@
         },
 
         _createElement: function(optElement, optGroup) {
-            var o = this._widget.options.optionRenderer 
+            var o = this._widget.options.optionRenderer
                   ? this._widget.options.optionRenderer(optElement, optGroup)
                   : $('<div></div>').text(optElement.text());
             var e = $('<div></div>').append(o).addClass('ui-state-default option-element')
+                .attr("unselectable", "on")  // disable text selection on this element (IE, Opera)
                 .data('option-value', optElement.attr('value'))
                 .hover(
                     function() {
@@ -464,7 +481,7 @@
                 );
             if (optElement.attr('disabled')) {
                 e.addClass('ui-state-disabled');
-            } else {
+            } else if (this._widget.options.selectionMode.indexOf('d&d') > -1) {
                 e.draggable({
                     appendTo: "body",
                     scope: this._widget.scope,
@@ -492,11 +509,11 @@
             }
             return e;
         },
-        
+
         _isOptionCollapsed: function(eData, selected) {
             return eData.optionGroup && this._groups[eData.optionGroup].collapsed[selected?0:1];
         },
-        
+
         _countGroupElements: function(gData) {
             var count = [0, 0];  // selected, available
             for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
@@ -504,15 +521,15 @@
             }
             return count;
         },
-        
+
         _updateGroupElements: function(index, groupName, selected) {
             var that = this;
             var gData = this._groups[groupName];
             var addKey = (selected ? 'selected' : 'available') + 'Info';
             var remKey = (selected ? 'available' : 'selected') + 'Info';
-            
+
             var count = this._countGroupElements(gData);
-            
+
             if (!gData[addKey]) {
                 gData[addKey] = {
                     element: $('<div></div>')
@@ -522,7 +539,7 @@
                             .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
                             .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
                             .click(function(e) {
-                                e.preventDefault(); e.stopPropagation(); 
+                                e.preventDefault(); e.stopPropagation();
                                 that._bufferedMode(false);
                                 for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
                                     if (!that._elements[i].filtered) {
@@ -548,8 +565,8 @@
                             .attr('data-localekey', 'collapseGroup')
                             .attr('title', this._widget._t('collapseGroup'))
                             .button({icons:{primary:'ui-icon-plus'}, text:false})
-                            .click(function(e) { 
-                                e.preventDefault(); e.stopPropagation(); 
+                            .click(function(e) {
+                                e.preventDefault(); e.stopPropagation();
                                 var e, c = !gData.collapsed[selected?0:1];
                                 gData.collapsed[selected?0:1] = c;
                                 $(this).button('option', 'icons', {primary:'ui-icon-' + (c ? 'minus' : 'plus')});
@@ -618,27 +635,38 @@
         },
 
         _appendToList: function(index, eData) {
+            var that = this;
             var insertIndex = index - 1;
             var selected = !!eData.optionElement.attr('selected');
 
-            while ((insertIndex >= 0) && 
-                   (!!this._elements[insertIndex].optionElement.attr('selected') != selected) && 
-                   (this._elements[insertIndex].listElement)) 
+            while ((insertIndex >= 0) &&
+                   (!!this._elements[insertIndex].optionElement.attr('selected') != selected) &&
+                   (this._elements[insertIndex].listElement))
             {
                 insertIndex--;
             }
 
             if (!eData.listElement) {
                 eData.listElement = this._createElement(eData.optionElement, eData.optionGroup);
+
+                if (this._selectionMode) {
+                    eData.listElement[this._selectionMode](function() {
+                        that.setSelected(index, !eData.optionElement.attr('selected'));
+                    });
+                }
             }
 
             eData.listElement[(selected?'add':'remove')+'Class']('ui-state-highlight').data('selected', selected).hide();  // setup draggable
 
             if (insertIndex < 0) {
-                //this._widget._lists[selected?'selected':'available'].prepend(eData.listElement);
                 this._listContainers[selected?'selected':'available'].prepend(eData.listElement);
             } else {
-                eData.listElement.insertAfter(this._elements[insertIndex].listElement);
+                var prev = this._elements[insertIndex].listElement;
+                // FIX : if previous element is animated, get it's animated parent as reference
+                if (prev.parent().hasClass('ui-effects-wrapper')) {
+                    prev = prev.parent();
+                }
+                eData.listElement.insertAfter(prev);
             }
 
             if (eData.optionGroup) {
@@ -671,10 +699,10 @@
 
         },
 
-        
+
         clear: function() {
             clearTimeout(this._procTimeout);
-            this._procTimeout = null;                   
+            this._procTimeout = null;
 
             this._visibleCount = 0;
             this._elements = [];
@@ -696,11 +724,11 @@
         },
 
         reIndex: function() {
-            // note : even if not sorted, options are added as they appear, 
+            // note : even if not sorted, options are added as they appear,
             //        so they should be grouped just fine anyway!
             if (this._widget.options.sortMethod) {
-                var comparator = typeof this._widget.options.sortMethod == 'function' 
-                               ? this._widget.options.sortMethod 
+                var comparator = typeof this._widget.options.sortMethod == 'function'
+                               ? this._widget.options.sortMethod
                                : ItemComparators[this._widget.options.sortMethod];
                 this._elements.sort(function(a, b) {
                     if (a.optionGroup || b.optionGroup) {
@@ -727,7 +755,7 @@
                 if (!e.listElement) {
                     this._appendToList(i, e);
                 }
-            } 
+            }
 
             this._widget._updateHeaders();
 
@@ -814,7 +842,7 @@
             if (eData.optionElement.attr('disabled') && selected) {
                 return;
             }
-            
+
             if (selected) {
                 eData.optionElement.attr('selected', true);
             } else {
@@ -839,7 +867,7 @@
                 if (!selected || !(eData.filtered || eData.listElement.data('selected'))) {
                     this.setSelected(i, selected, true);
                 }
-            } 
+            }
 
             this._widget._updateHeaders();
             this._bufferedMode(false);
@@ -855,7 +883,7 @@
      *   locale        (string) the locale to use (default = '')
      *   key           (string) the locale string key
      *   plural        (int)    the plural value to use
-     *   data          (object) the data object to use as variables 
+     *   data          (object) the data object to use as variables
      *
      */
     function _(p) {
