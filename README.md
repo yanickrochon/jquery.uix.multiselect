@@ -47,7 +47,7 @@ TODO
 * <del>add disabled items support</del>
 * <del>add (collapsible) grouped items support</del>
 * <del>(de)select all group options</del>
-* </del>selection mode : (drag, click, dblclick, etc.)</del>
+* <del>selection mode : (drag, click, dblclick, etc.)</del>
 * add custom item rendering support (*untested*)
 * sortable on selected items
 * test in all browsers (*not fully tested*)
