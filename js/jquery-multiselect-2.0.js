@@ -23,12 +23,13 @@
         options: {
             collapsibleGroups: true,     // tells whether the option groups can be collapsed or not (default: true)
             locale: 'auto',              // any valid locale, 'auto', or '' for default built-in strings (default: 'auto')
-            moveEffect: null,          // 'blind','bounce','clip','drop','explode','fold','highlight','puff','pulsate','shake','slide' (default: null)
-            moveEffectOptions: {},     // effect options (see jQuery UI documentation) (default: {})
-            moveEffectSpeed: null,     // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
+            moveEffect: null,            // 'blind','bounce','clip','drop','explode','fold','highlight','puff','pulsate','shake','slide' (default: null)
+            moveEffectOptions: {},       // effect options (see jQuery UI documentation) (default: {})
+            moveEffectSpeed: null,       // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
             optionRenderer: false,       // a function that will return the item element to be rendered in the list (default: false)
             selectionMode: 'click,d&d',  // how items can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'dblclick,d&d')
             splitRatio: 0.55,            // % of the left list's width of the widget total width (default 0.55)
+            sortable: false,             // if the selected list should be user sortable or not
             sortMethod: 'standard'       // null, 'standard', 'natural'; a sort function name (see ItemComparators) (default: 'standard')
         },
 
@@ -532,8 +533,8 @@
         _updateGroupElements: function(index, groupName, selected) {
             var that = this;
             var gData = this._groups[groupName];
-            var addKey = (selected ? 'selected' : 'available') + 'Info';
-            var remKey = (selected ? 'available' : 'selected') + 'Info';
+            var addKey = (selected ? 'selected' : 'available');
+            var remKey = (selected ? 'available' : 'selected');
 
             var count = this._countGroupElements(gData);
 
@@ -546,18 +547,24 @@
                             .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
                             .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
                             .click(function(e) {
+                                var _transferedIndex = [];
                                 e.preventDefault(); e.stopPropagation();
                                 that._bufferedMode(true);
-                                for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
-                                    if (!that._elements[i].filtered) {
+                                for (var i=gData.startIndex, len=gData.startIndex+gData.count, el; i<len; i++) {
+                                    el = that._elements[i];
+                                    if (!el.filtered && !el.optionElement.attr('selected') != selected) {
                                         that.setSelected(i, !selected, true);
+                                        _transferedIndex.push(i);
                                     }
                                 }
                                 count = that._countGroupElements(gData);
                                 that._widget._updateHeaders();
-                                gData[remKey].element.children(':last').text(groupName + ' (' + count[selected?0:1] + ')');
+                                // group element could have been during multi-selection process...
+                                if (gData[addKey]) {
+                                    gData[addKey].element.children(':last').text(groupName + ' (' + count[selected?0:1] + ')');
+                                }
                                 that._bufferedMode(false);
-                                that._widget.element.trigger('change', that._createEventUI({ itemIndex:[gData.startIndex,gData.startIndex+gData.count], selected:!selected}) );
+                                that._widget.element.trigger('change', that._createEventUI({ itemIndex:_transferedIndex, selected:!selected}) );
                                 return false;
                             })
                         )
@@ -599,13 +606,10 @@
                 } else if (gData[addKey].optIndex == index) {
                     var shouldBeVisible = false;
                     // try to find if we still have something to keep the group element attached
-                    for (var i=gData[addKey].optIndex+1, len=this._elements.length; i<len; i++) {
-                        if (this._elements[i].optionGroup != groupName) {
-                            break;
-                        } else if (!!this._elements[i].optionElement.attr('selected') == selected) {
+                    for (var i=gData[addKey].optIndex+1, len=this._elements.length; !shouldBeVisible && i<len && this._elements[i].optionGroup == groupName; i++) {
+                        if (!!this._elements[i].optionElement.attr('selected') == selected) {
                             gData[addKey].optIndex = i;
                             shouldBeVisible = true;
-                            break;
                         }
                     }
                     if (!shouldBeVisible) {
@@ -879,7 +883,7 @@
             this._widget._updateHeaders();
             this._bufferedMode(false);
 
-            this._widget.element.trigger('change', this._createEventUI({ itemIndex:[0,this._elements.length], selected:selected }) );
+            this._widget.element.trigger('change', this._createEventUI({ itemIndex:'all', selected:selected }) );
         }
 
     };

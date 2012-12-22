@@ -39,7 +39,7 @@
 
                 $.each(widgets, function(k, i) {
                     $('#multiselect_'+k).multiselect(i).bind('change', function(evt, ui) {
-                        var value = ui.itemIndex > -1 ? ui.optionCache.get(ui.itemIndex).optionElement.attr('value') : null;
+                        var value = ui.itemIndex == 'all' ? false : $.map($.isArray(ui.itemIndex) ? ui.itemIndex : [ui.itemIndex], function(i) { return ui.optionCache.get(i).optionElement.attr('value'); }).join(', ');
                         $('#debug_'+k).append( $('<div></div>').text('Multiselect change event! ' + (value ? 'value='+value+' was' : 'all items were') + ' ' + (ui.selected ? 'selected' : 'deselected')) );
                     }).bind('multiselectsearch', function(evt, ui) {
                         $('#debug_'+k).append( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
