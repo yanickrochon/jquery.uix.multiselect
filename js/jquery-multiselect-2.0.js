@@ -336,6 +336,8 @@
             delete this._optionCache;
             delete this._lists;
             delete this._elementWrapper;
+
+            this.element.show();
         }
     });
 
@@ -457,8 +459,13 @@
 
     OptionCache.prototype = {
         _createEventUI: function(data) {
+            var that = this;
+
             return $.extend({
-                optionCache: this
+                optionCache: {
+                    get: function(index) { return this.get.call(that, index); },
+                    size: function() { return this.size.call(that); }
+                }
             }, data);
         },
 
@@ -540,7 +547,7 @@
                             .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
                             .click(function(e) {
                                 e.preventDefault(); e.stopPropagation();
-                                that._bufferedMode(false);
+                                that._bufferedMode(true);
                                 for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
                                     if (!that._elements[i].filtered) {
                                         that.setSelected(i, !selected, true);
@@ -548,9 +555,9 @@
                                 }
                                 count = that._countGroupElements(gData);
                                 that._widget._updateHeaders();
-                                gData[addKey].element.children(':last').text(groupName + ' (' + count[selected?0:1] + ')');
+                                gData[remKey].element.children(':last').text(groupName + ' (' + count[selected?0:1] + ')');
                                 that._bufferedMode(false);
-                                that._widget.element.trigger('change', this._createEventUI({ itemIndex:[gData.startIndex,gData.startIndex+gData.count], selected:!selected}) );
+                                that._widget.element.trigger('change', that._createEventUI({ itemIndex:[gData.startIndex,gData.startIndex+gData.count], selected:!selected}) );
                                 return false;
                             })
                         )

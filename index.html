@@ -10,44 +10,55 @@
         <script type="text/javascript" src="js/jquery-ui-1.9.2.custom.js"></script>
         <script type="text/javascript" src="js/jquery-multiselect-2.0.js"></script>
         <script type="text/javascript" src="js/locales/jquery-multiselect-2_fr.js"></script>
+        <script type="text/javascript" src="js/jquery.themeswitcher.min.js"></script>
         <script type="text/javascript">
             $(function() {
                 //navigator.userLanguage = 'fr';
-
-                $('#multiselect_simple').multiselect({
-                    sortMethod: 'standard',
-                    moveEffect: 'blind',
-                    moveEffectOptions: {direction:'vertical'},
-                    moveEffectSpeed: 'fast'
-                }).bind('change', function(evt, ui) {
-                    var value = ui.itemIndex > -1 ? ui.optionCache.get(ui.itemIndex).optionElement.attr('value') : null;
-                    $('#debug_simple').append( $('<div></div>').text('Multiselect change event! ' + (value ? 'value='+value+' was' : 'all items were') + ' ' + (ui.selected ? 'selected' : 'deselected')) );
-                }).bind('multiselectsearch', function(evt, ui) {
-                    $('#debug_simple').append( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
-                });
-
-                $('#multiselect_disabled').multiselect();
-
-                $('#multiselect_groups').multiselect();
-
 
                 if ($.fn.themeswitcher) {
                     $('#switcher')
                         .css('padding-bottom', '8px')
                         .before('<h4>Use the themeroller to dynamically change look and feel</h4>')
-                        .themeswitcher();
+                        .themeswitcher({imgpath: "images/"});
                 }
 
 
-                $('#btnRefresh_simple').click(function() {
-                    $('#multiselect_simple').multiselect('refresh');
+                var defaultOptions = {
+                    moveEffect: 'blind',
+                    moveEffectOptions: {direction:'vertical'},
+                    moveEffectSpeed: 'fast'
+                };
+
+                var widgets = {
+                    'simple': $.extend($.extend({}, defaultOptions), {
+                        sortMethod: 'standard'
+                    }),
+                    'disabled': $.extend({}, defaultOptions),
+                    'groups': $.extend({}, defaultOptions)
+                };
+
+                $.each(widgets, function(k, i) {
+                    $('#multiselect_'+k).multiselect(i).bind('change', function(evt, ui) {
+                        var value = ui.itemIndex > -1 ? ui.optionCache.get(ui.itemIndex).optionElement.attr('value') : null;
+                        $('#debug_'+k).append( $('<div></div>').text('Multiselect change event! ' + (value ? 'value='+value+' was' : 'all items were') + ' ' + (ui.selected ? 'selected' : 'deselected')) );
+                    }).bind('multiselectsearch', function(evt, ui) {
+                        $('#debug_'+k).append( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
+                    });
+
+                    $('#btnToggleOriginal_'+k).click(function() {
+                        var _m = $('#multiselect_'+k);
+                        if (_m.is(':visible')) {
+                            _m.next().toggle().end().toggle().multiselect('refresh');
+                        } else {
+                            _m.toggle().next().toggle();
+                        }
+                    });
+                    $('#btnSearch_'+k).click(function() {
+                        $('#multiselect_'+k).multiselect('search', $('#txtSearch_'+k).val());
+                    });
+
                 });
-                $('#btnToggleOriginal_simple').click(function() {
-                    $('#multiselect_simple').css('float','right').toggle();
-                });
-                $('#btnSearch_simple').click(function() {
-                    $('#multiselect_simple').multiselect('search', $('#txtSearch_simple').val());
-                });
+
 
                 $('#selectLocale').change(function() {
                     $('.multiselect').multiselect('locale', $(this).val() );
@@ -67,10 +78,10 @@
                 height: 200px;
             }
             #locales { padding-bottom:16px; }
-            #uiControls {
+            div.debug_uiControls {
                 margin-top: 16px;
             }
-            #debug_simple {
+            div.debug_log {
                 height: 100px;
                 overflow: auto;
                 border: 1px solid black;
@@ -348,14 +359,13 @@
             </div>
             </form>
 
-            <div id="uiControls">
-                <button id="btnRefresh_simple">Refresh</button>
+            <div class="debug_uiControls">
                 <button id="btnToggleOriginal_simple">Toggle original element</button>
                 <input type="text" id="txtSearch_simple" />
                 <button id="btnSearch_simple">Search</button>
             </div>
 
-            <div id="debug_simple"></div>
+            <div id="debug_simple" class="debug_log"></div>
         </div>
 
         <div id="usage_disabled">
@@ -452,7 +462,13 @@
                 <option value="Vul" disabled="disabled">Vulpecula</option></select>
             </div>
 
-            <div class="ui-helper-clearfix"></div>
+            <div class="debug_uiControls">
+                <button id="btnToggleOriginal_disabled">Toggle original element</button>
+                <input type="text" id="txtSearch_disabled" />
+                <button id="btnSearch_disabled">Search</button>
+            </div>
+
+            <div id="debug_disabled" class="debug_log"></div>
         </div>
 
         <div id="usage_groups">
@@ -468,17 +484,17 @@
                 <option value="Lobini">Lobini</option>
                 <option value="TAC Motors">TAC Motors</option>
                 <option value="Troller">Troller</option>
-            <optgroup><optgroup label="Canada">
+            </optgroup><optgroup label="Canada">
                 <option value="Bricklin">Bricklin</option>
                 <option value="Studebaker">Studebaker</option>
-            <optgroup><optgroup label="China">
-            <optgroup><optgroup label="Czech Republic">
+            </optgroup><optgroup label="China">
+            </optgroup><optgroup label="Czech Republic">
                 <option value="Avia">Avia</option>
                 <option value="Kaipan">Kaipan</option>
                 <option value="Praga">Praga</option>
                 <option value="Skoda Auto">Skoda Auto</option>
                 <option value="Tatra">Tatra</option>
-            <optgroup><optgroup label="France">
+            </optgroup><optgroup label="France">
                 <option value="ACMA">ACMA</option>
                 <option value="Aixam">Aixam</option>
                 <option value="Bugatti">Bugatti</option>
@@ -488,7 +504,7 @@
                 <option value="Matra">Matra</option>
                 <option value="Peugeot">Peugeot</option>
                 <option value="Renault">Renault</option>
-            <optgroup><optgroup label="Germany">
+            </optgroup><optgroup label="Germany">
                 <option value="Audi">Audi</option>
                 <option value="AWZ">AWZ</option>
                 <option value="Barkas">Barkas</option>
@@ -517,7 +533,7 @@
                 <option value="Volkswagen">Volkswagen</option>
                 <option value="Wanderer">Wanderer</option>
                 <option value="Wartburg">Wartburg</option>
-            <optgroup><optgroup label="India">
+            </optgroup><optgroup label="India">
                 <option value="Ashok Leyland">Ashok Leyland</option>
                 <option value="Chinkara Motors">Chinkara Motors</option>
                 <option value="DC Design">DC Design</option>
@@ -529,7 +545,7 @@
                 <option value="Premier Automobiles Limited">Premier Automobiles Limited</option>
                 <option value="Tata Motors">Tata Motors</option>
                 <option value="SML ISUZU">SML ISUZU</option>
-            <optgroup><optgroup label="Iran">
+            </optgroup><optgroup label="Iran">
                 <option value="Bahman Group">Bahman Group</option>
                 <option value="IKCO (Iran Khodro)">IKCO (Iran Khodro)</option>
                 <option value="Kerman Motors">Kerman Motors</option>
@@ -537,7 +553,7 @@
                 <option value="MVM">MVM</option>
                 <option value="Pars Khodro">Pars Khodro</option>
                 <option value="SAIPA">SAIPA</option>
-            <optgroup><optgroup label="Italy">
+            </optgroup><optgroup label="Italy">
                 <option value="Alfa Romeo">Alfa Romeo</option>
                 <option value="DR Motor">DR Motor</option>
                 <option value="Ferrari">Ferrari</option>
@@ -549,7 +565,7 @@
                 <option value="Pagani">Pagani</option>
                 <option value="Siata">Siata</option>
                 <option value="Vignale">Vignale</option>
-            <optgroup><optgroup label="Japan">
+            </optgroup><optgroup label="Japan">
                 <option value="Acura">Acura</option>
                 <option value="Daihatsu">Daihatsu</option>
                 <option value="Datsun">Datsun</option>
@@ -565,11 +581,11 @@
                 <option value="Suzuki">Suzuki</option>
                 <option value="Toyota">Toyota</option>
                 <option value="Yamaha">Yamaha</option>
-            <optgroup><optgroup label="Malaysia">
+            </optgroup><optgroup label="Malaysia">
                 <option value="Naza">Naza</option>
                 <option value="Perodua">Perodua</option>
                 <option value="Proton">Proton</option>
-            <optgroup><optgroup label="Mexico">
+            </optgroup><optgroup label="Mexico">
                 <option value="Mastretta">Mastretta</option>
                 <option value="DINA">DINA</option>
                 <option value="King">King</option>
@@ -577,40 +593,40 @@
                 <option value="Vehizero">Vehizero</option>
                 <option value="Carabela">Carabela</option>
                 <option value="Italika">Italika</option>
-            <optgroup><optgroup label="Monaco">
+            </optgroup><optgroup label="Monaco">
                 <option value="Venturi">Venturi</option>
-            <optgroup><optgroup label="Netherlands">
+            </optgroup><optgroup label="Netherlands">
                 <option value="DAF">DAF</option>
                 <option value="Spyker">Spyker</option>
-            <optgroup><optgroup label="Romania">
+            </optgroup><optgroup label="Romania">
                 <option value="Automobile Dacia">Automobile Dacia</option>
-            <optgroup><optgroup label="Russia">
+            </optgroup><optgroup label="Russia">
                 <option value="Avtoframos">Avtoframos</option>
                 <option value="GAZ">GAZ</option>
                 <option value="Kamaz">Kamaz</option>
                 <option value="Lada">Lada</option>
                 <option value="Marussia Motors">Marussia Motors</option>
                 <option value="Volga">Volga</option>
-            <optgroup><optgroup label="Serbia">
+            </optgroup><optgroup label="Serbia">
                 <option value="Zastava Automobiles">Zastava Automobiles</option>
-            <optgroup><optgroup label="South Africa">
+            </optgroup><optgroup label="South Africa">
                 <option value="G.S.M.">G.S.M.</option>
-            <optgroup><optgroup label="South Korea">
+            </optgroup><optgroup label="South Korea">
                 <option value="GM Korea">GM Korea</option>
                 <option value="Hyundai Motor Company">Hyundai Motor Company</option>
                 <option value="Kia Motors">Kia Motors</option>
                 <option value="Renault Samsung Motors">Renault Samsung Motors</option>
                 <option value="SsangYong Motor Company">SsangYong Motor Company</option>
-            <optgroup><optgroup label="Spain">
+            </optgroup><optgroup label="Spain">
                 <option value="SEAT">SEAT</option>
-            <optgroup><optgroup label="Sweden">
+            </optgroup><optgroup label="Sweden">
                 <option value="Koenigsegg">Koenigsegg</option>
                 <option value="Jösse Car">Jösse Car</option>
                 <option value="Saab">Saab</option>
                 <option value="Volvo">Volvo</option>
-            <optgroup><optgroup label="Switzerland">
+            </optgroup><optgroup label="Switzerland">
                 <option value="Enzmann">Enzmann</option>
-            <optgroup><optgroup label="United Kingdom">
+            </optgroup><optgroup label="United Kingdom">
                 <option value="AC">AC</option>
                 <option value="Allard">Allard</option>
                 <option value="Alvis">Alvis</option>
@@ -650,7 +666,7 @@
                 <option value="TVR">TVR</option>
                 <option value="Vauxhall">Vauxhall</option>
                 <option value="Wolseley">Wolseley</option>
-            <optgroup><optgroup label="United States">
+            </optgroup><optgroup label="United States">
                 <option value="Buick">Buick</option>
                 <option value="Cadillac">Cadillac</option>
                 <option value="Chevrolet">Chevrolet</option>
@@ -672,7 +688,13 @@
             </select>
             </div>
 
-            <div class="ui-helper-clearfix"></div>
+            <div class="debug_uiControls">
+                <button id="btnToggleOriginal_groups">Toggle original element</button>
+                <input type="text" id="txtSearch_groups" />
+                <button id="btnSearch_groups">Search</button>
+            </div>
+
+            <div id="debug_groups" class="debug_log"></div>
         </div>
 
     </div>
