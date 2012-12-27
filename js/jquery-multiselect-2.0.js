@@ -21,16 +21,19 @@
     // The jQuery.uix namespace will automatically be created if it doesn't exist
     $.widget("uix.multiselect", {
         options: {
-            collapsibleGroups: true,     // tells whether the option groups can be collapsed or not (default: true)
-            locale: 'auto',              // any valid locale, 'auto', or '' for default built-in strings (default: 'auto')
-            moveEffect: null,            // 'blind','bounce','clip','drop','explode','fold','highlight','puff','pulsate','shake','slide' (default: null)
-            moveEffectOptions: {},       // effect options (see jQuery UI documentation) (default: {})
-            moveEffectSpeed: null,       // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
-            optionRenderer: false,       // a function that will return the item element to be rendered in the list (default: false)
-            selectionMode: 'click,d&d',  // how items can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'dblclick,d&d')
-            splitRatio: 0.55,            // % of the left list's width of the widget total width (default 0.55)
-            sortable: false,             // if the selected list should be user sortable or not
-            sortMethod: 'standard'       // null, 'standard', 'natural'; a sort function name (see ItemComparators) (default: 'standard')
+            collapsibleGroups: true,       // tells whether the option groups can be collapsed or not (default: true)
+            defaultGroupName: '',          // the name of the default option group (default: '')
+            locale: 'auto',                // any valid locale, 'auto', or '' for default built-in strings (default: 'auto')
+            moveEffect: null,              // 'blind','bounce','clip','drop','explode','fold','highlight','puff','pulsate','shake','slide' (default: null)
+            moveEffectOptions: {},         // effect options (see jQuery UI documentation) (default: {})
+            moveEffectSpeed: null,         // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
+            optionRenderer: false,         // a function that will return the item element to be rendered in the list (default: false)
+            selectionMode: 'click,d&d',    // how options can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'dblclick,d&d')
+            showDefaultGroupHeader: false, // show the default option group header (default: false)
+            showEmptyGroups: false,        // always display option groups even if empty (default: false)
+            splitRatio: 0.55,              // % of the left list's width of the widget total width (default 0.55)
+            sortable: false,               // if the selected list should be user sortable or not  TODO
+            sortMethod: null               // null, 'standard', 'natural'; a sort function name (see ItemComparators) (default: 'standard')
         },
 
         _create: function() {
@@ -104,17 +107,17 @@
             ;
 
             this._buttons = {
-                search: btnSearch,
-                selectAll: btnSelectAll,
-                deselectAll: btnDeselectAll
+                'search': btnSearch,
+                'selectAll': btnSelectAll,
+                'deselectAll': btnDeselectAll
             };
             this._headers = {
-                selected: selListHeader,
-                available: avListHeader
+                'selected': selListHeader,
+                'available': avListHeader
             };
             this._lists = {
-                selected: selListContent,
-                available: avListContent
+                'selected': selListContent,
+                'available': avListContent
             };
 
             this._applyListDroppable();
@@ -155,14 +158,17 @@
                         if (opt.tagName.toUpperCase() == 'OPTGROUP') {
                             var optGroup = $(opt).attr('label');
                             var grpOptions = opt.childNodes;
+
+                            that._optionCache.prepareGroup(optGroup);
+
                             for (var j=0, l2=grpOptions.length; j<l2; j++) {
                                 opt = grpOptions[j];
                                 if (opt.nodeType == 1) {
-                                    that._optionCache.prepare($(opt), optGroup);
+                                    that._optionCache.prepareOption($(opt), optGroup);
                                 }
                             }
                         } else {
-                            that._optionCache.prepare($(opt));
+                            that._optionCache.prepareOption($(opt));  // add to default group
                         }
                     }
                 }
@@ -257,35 +263,35 @@
 
             var that = this;
 
+            var getElementData = function(d) {
+                return that._optionCache._elements[that._optionCache.indexOf(d.data('option-value'))];
+            };
+
             this._lists['selected'].droppable({
                 accept: function(draggable) {
-                    return !draggable.data('selected');  // not selected only
+                    return !getElementData(draggable).selected;  // not selected only
                 },
                 activeClass: 'ui-state-highlight',
                 scope: this.scope,
                 drop: function(evt, ui) {
-                    var index = that._optionCache.indexOf(ui.draggable.data('option-value'));
-
                     ui.draggable.removeClass('ui-state-disabled');
                     ui.helper.remove();
 
-                    that._optionCache.setSelected(index, true);
+                    that._optionCache.setSelected(getElementData(ui.draggable), true);
                 }
             });
 
             this._lists['available'].droppable({
                 accept: function(draggable) {
-                    return draggable.data('selected');  // selected only
+                    return getElementData(draggable).selected;  // selected only
                 },
                 activeClass: 'ui-state-highlight',
                 scope: this.scope,
                 drop: function(evt, ui) {
-                    var index = that._optionCache.indexOf(ui.draggable.data('option-value'));
-
                     ui.draggable.removeClass('ui-state-disabled');
                     ui.helper.remove();
 
-                    that._optionCache.setSelected(index, false);
+                    that._optionCache.setSelected(getElementData(ui.draggable), false);
                 }
             });
         },
@@ -300,9 +306,9 @@
         _updateHeaders: function() {
             var info = this._optionCache.getSelectionInfo();
 
-            this._headers.selected.text( this._t('itemsSelected', info.selected, {count:info.selected}) );
-            this._headers.available.text( this._t('itemsAvailable', info.available, {count:info.available}) );
-            //this._headers.available.attr('title',  this._t(...., info.filtered, {count:info.filtered}) );
+            this._headers['selected'].text( this._t('itemsSelected', info.selected, {count:info.selected}) );
+            this._headers['available'].text( this._t('itemsAvailable', info.available, {count:info.available}) );
+            //this._headers['available'].attr('title',  this._t(...., info.filtered, {count:info.filtered}) );
 
         },
 
@@ -313,9 +319,9 @@
             this._elementWrapper.find('.multiselect-selected-list').width(separatorWidth);
             this._elementWrapper.find('.multiselect-available-list').css('margin-left', separatorWidth);
 
-            this._searchField.width( this._headers.available.parent().width() - 48 );
-            this._lists.selected.height(this.element.height() - this._headers.selected.parent().height());
-            this._lists.available.height(this.element.height() - this._headers.available.parent().height());
+            this._searchField.width( this._headers['available'].parent().width() - 48 );
+            this._lists['selected'].height(this.element.height() - this._headers['selected'].parent().height());
+            this._lists['available'].height(this.element.height() - this._headers['available'].parent().height());
 
         },
 
@@ -353,7 +359,7 @@
         /**
          * Naive general implementation
          */
-        standard: function(a, b, g) {
+        standard: function(a, b) {
             if (a > b) return 1;
             if (a < b) return -1;
             return 0;
@@ -362,7 +368,7 @@
          * Natural Sort algorithm for Javascript - Version 0.7 - Released under MIT license
          * Author: Jim Palmer (based on chunking idea from Dave Koelle)
          */
-        natural: function naturalSort(a, b, g) {
+        natural: function naturalSort(a, b) {
             var re = /(^-?[0-9]+(\.?[0-9]*)[df]?e?[0-9]?$|^0x[0-9a-f]+$|[0-9]+)/gi,
                 sre = /(^[ ]*|[ ]*$)/g,
                 dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
@@ -434,15 +440,127 @@
     };
 
 
+    var SortedMap = function(comp) {
+        // private members
+
+        var keys = [];
+        var items = {};
+        var comparator = comp;
+
+        // public methods
+
+        this.clear = function(comp) {
+            keys = [];
+            items = {};
+            comparator = comp;
+        };
+
+        this.containsKey = function(key) {
+            return items[key] ? true : false;
+        };
+
+        this.get = function(key) {
+            return items[key];
+        };
+
+        /**
+         * @Unused
+        this.containsValue = function(val) {
+            var found = false;
+            $.each(items, function(k, v) {
+                if (v == val) found = true;
+            });
+            return found;
+        };
+        */
+
+        this.put = function(key, val) {
+            if (!items[key]) {
+                if (comparator) {
+                    keys.splice((function() {
+                        var low = 0, high = keys.length;
+                        var mid = -1, c = 0;
+                        while (low < high)   {
+                            mid = parseInt((low + high)/2);
+                            c = comparator(keys[mid], val);
+                            if (c < 0)   {
+                                low = mid + 1;
+                            } else if (c > 0) {
+                                high = mid;
+                            } else {
+                                return mid;
+                            }
+                        }
+                        return low;
+                    })(), 0, key);
+                } else {
+                    keys.push(key);
+                }
+            }
+
+            items[key] = val;
+        };
+
+        this.each = function(callback) {
+            var args = Array.prototype.slice.call(arguments, 1);
+            args.splice(0, 0, null, null);
+            for (var i=0, len=keys.length; i<len; i++) {
+                args[0] = keys[i];
+                args[1] = items[keys[i]];
+                callback.apply(args[1], args);
+            }
+        };
+
+        this.first = function() {
+            return keys[0];
+        };
+
+        this.last = function() {
+            return keys[keys.length - 1];
+        };
+
+        /**
+         * Return the next key for the given one
+         * @param key string
+         * @return string
+         */
+        this.next = function(key) {
+            var index = keys.indexOf(key);
+
+            if (index > keys.length - 2) return undefined;
+            else return keys[index + 1];
+        };
+
+        /**
+         * Return the previous key for the given one
+         * @param key string
+         * @return string
+         */
+        this.previous = function(key) {
+            var index = keys.indexOf(key);
+
+            if (index < 1) return undefined;
+            else return keys[index - 1];
+        };
+
+        this.size = function() {
+            return keys.length;
+        };
+    };
+
+
+
 
     var OptionCache = function(widget) {
         this._widget = widget;
         this._listContainers = {
-            selected: $('<div></div>').appendTo(this._widget._lists['selected']),
-            available: $('<div></div>').appendTo(this._widget._lists['available'])
+            'selected': $('<div></div>').appendTo(this._widget._lists['selected']),
+            'available': $('<div></div>').appendTo(this._widget._lists['available'])
         };
+
         this._elements = [];
-        this._groups = {};
+        this._groups = new SortedMap(this.getComparator());
+
         this._moveEffect = {
             fn: widget.options.moveEffect,
             options: widget.options.moveEffectOptions,
@@ -468,6 +586,83 @@
                     size: function() { return this.size.call(that); }
                 }
             }, data);
+        },
+
+        _createGroupElement: function(optGroup, selected) {
+            var that = this;
+            var gData;
+
+            var getLocalData = function() {
+                if (!gData) gData = that._groups.get(optGroup);
+                return gData;
+            };
+
+            var labelCount = $('<span></span>').addClass('label')
+                .text(optGroup + ' (0)')
+                .attr('title', optGroup + ' (0)');
+
+            var fnUpdateCount = function() {
+                var gDataDst = getLocalData()[selected?'selected':'available'];
+
+                if (gDataDst.count == 0 && selected) {
+                    gDataDst.listElement.hide();
+                    gDataDst.listContainer.height('auto');
+                }
+
+                var t = optGroup + ' (' + gDataDst.count + ')';
+                labelCount.text(t).attr('title', t);
+            };
+
+            return $('<div></div>')
+                // create an utility function to update group element count
+                .data('fnUpdateCount', fnUpdateCount)
+                .append($('<div></div>')
+                    .addClass('ui-widget-header ui-priority-secondary group-element')
+                    .append( $('<button></button>').addClass('uix-control-right')
+                        .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
+                        .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
+                        .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
+                        .click(function(e) {
+                            e.preventDefault(); e.stopPropagation();
+
+                            var gData = getLocalData();
+
+                            if (gData[selected?'selected':'available'].count > 0) {
+                                var _transferedIndex = [];
+
+                                that._bufferedMode(true);
+                                for (var i=gData.startIndex, len=gData.startIndex+gData.count, eData; i<len; i++) {
+                                    eData = that._elements[i];
+                                    if (!eData.filtered && !eData.selected != selected) {
+                                        that.setSelected(eData, !selected, true);
+                                        _transferedIndex.push(i);
+                                    }
+                                }
+
+                                that._updateGroupElements(gData);
+                                that._widget._updateHeaders();
+
+                                that._bufferedMode(false);
+
+                                that._widget.element.trigger('change', that._createEventUI({ itemIndex:_transferedIndex, selected:!selected}) );
+                            }
+
+                            return false;
+                        })
+                    )
+                    .append(labelCount)
+                )
+            ;
+        },
+
+        _createGroupContainerElement: function(optGroup, selected) {
+            var e = $('<div></div>');
+
+            if (/* sortable */ false) {
+
+            }
+
+            return e;
         },
 
         _createElement: function(optElement, optGroup) {
@@ -518,190 +713,75 @@
             return e;
         },
 
-        _isOptionCollapsed: function(eData, selected) {
-            return eData.optionGroup && this._groups[eData.optionGroup].collapsed[selected?0:1];
+        _isOptionCollapsed: function(eData) {
+            return this._groups.get(eData.optionGroup)[eData.selected?'selected':'available'].collapsed;
         },
 
-        _countGroupElements: function(gData) {
-            var count = [0, 0];  // selected, available
-            for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
-                count[this._elements[i].optionElement.attr('selected')?0:1]++;
-            }
-            return count;
-        },
-
-        _updateGroupElements: function(index, groupName, selected) {
-            var that = this;
-            var gData = this._groups[groupName];
-            var addKey = (selected ? 'selected' : 'available');
-            var remKey = (selected ? 'available' : 'selected');
-
-            var count = this._countGroupElements(gData);
-
-            if (!gData[addKey]) {
-                gData[addKey] = {
-                    element: $('<div></div>')
-                        .addClass('ui-widget-header ui-priority-secondary group-element')
-                        .append( $('<button></button>').addClass('uix-control-right')
-                            .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
-                            .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
-                            .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
-                            .click(function(e) {
-                                var _transferedIndex = [];
-                                e.preventDefault(); e.stopPropagation();
-                                that._bufferedMode(true);
-                                for (var i=gData.startIndex, len=gData.startIndex+gData.count, el; i<len; i++) {
-                                    el = that._elements[i];
-                                    if (!el.filtered && !el.optionElement.attr('selected') != selected) {
-                                        that.setSelected(i, !selected, true);
-                                        _transferedIndex.push(i);
-                                    }
-                                }
-                                count = that._countGroupElements(gData);
-                                that._widget._updateHeaders();
-                                // group element could have been during multi-selection process...
-                                if (gData[addKey]) {
-                                    gData[addKey].element.children(':last').text(groupName + ' (' + count[selected?0:1] + ')');
-                                }
-                                that._bufferedMode(false);
-                                that._widget.element.trigger('change', that._createEventUI({ itemIndex:_transferedIndex, selected:!selected}) );
-                                return false;
-                            })
-                        )
-                        .append($('<span></span>').addClass('label')
-                            .text(groupName + ' (' + count[selected?0:1] + ')')
-                            .attr('title', groupName + ' (' + count[selected?0:1] + ')')),
-                    optIndex: index
-                };
-                if (this._widget.options.collapsibleGroups) {
-                    gData[addKey].element
-                        .prepend( $('<button></button>').addClass('uix-control-left')
-                            .attr('data-localekey', 'collapseGroup')
-                            .attr('title', this._widget._t('collapseGroup'))
-                            .button({icons:{primary:'ui-icon-plus'}, text:false})
-                            .click(function(e) {
-                                e.preventDefault(); e.stopPropagation();
-                                var e, c = !gData.collapsed[selected?0:1];
-                                gData.collapsed[selected?0:1] = c;
-                                $(this).button('option', 'icons', {primary:'ui-icon-' + (c ? 'minus' : 'plus')});
-                                for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
-                                    e = that._elements[i];
-                                    if (!!e.optionElement.attr('selected') == selected) {
-                                        e.listElement[c || e.filtered ? 'hide' : 'show']();
-                                    }
-                                }
-                                return false;
-                            })
-                        );
+        _updateGroupElements: function(gData) {
+            if (gData) {
+                gData['selected'].count = 0;
+                gData['available'].count = 0;
+                for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
+                    gData[this._elements[i].selected?'selected':'available'].count++;
                 }
-                gData[addKey].element.insertBefore(this._elements[index].listElement);
+                gData['selected'].listElement.data('fnUpdateCount')();
+                gData['available'].listElement.data('fnUpdateCount')();
             } else {
-                // update group name and count
-                gData[addKey].element.children(':last')
-                    .text(groupName + ' (' + count[selected?0:1] + ')')
-                    .attr('title', groupName + ' (' + count[selected?0:1] + ')');
-                if (gData[addKey].optIndex > index) {
-                    gData[addKey].optIndex = index;
-                    gData[addKey].element.insertBefore(this._elements[index].listElement);
-                } else if (gData[addKey].optIndex == index) {
-                    var shouldBeVisible = false;
-                    // try to find if we still have something to keep the group element attached
-                    for (var i=gData[addKey].optIndex+1, len=this._elements.length; !shouldBeVisible && i<len && this._elements[i].optionGroup == groupName; i++) {
-                        if (!!this._elements[i].optionElement.attr('selected') == selected) {
-                            gData[addKey].optIndex = i;
-                            shouldBeVisible = true;
-                        }
-                    }
-                    if (!shouldBeVisible) {
-                        gData[addKey].element.remove();
-                        gData[addKey] = null;
-                    }
-                }
-            }
-            if (gData[remKey]) {
-                gData[remKey].element.children(':last')
-                    .text(groupName + ' (' + count[!selected?0:1] + ')')
-                    .attr('title', groupName + ' (' + count[!selected?0:1] + ')');
-                if (gData[remKey].optIndex == index) {
-                    var shouldBeVisible = false;
-                    //alert( gData[remKey].optIndex );
-                    // try to find if we still have something to keep the group element attached
-                    for (var i=gData[remKey].optIndex+1, len=this._elements.length; i<len; i++) {
-                        if (this._elements[i].optionGroup != groupName) {
-                            //alert( "Different group at " + i + " with " + this._elements[i].optionGroup + " != " + groupName);
-                            break;
-                        } else if (!this._elements[i].optionElement.attr('selected') == selected) {
-                            //alert( "Found next element at " + i );
-                            gData[remKey].optIndex = i;
-                            shouldBeVisible = true;
-                            break;
-                        }
-                    }
-                    if (!shouldBeVisible) {
-                        gData[remKey].element.remove();
-                        gData[remKey] = null;
-                    }
-                }
+                this._groups.each(function(k,gData,that) {
+                    that._updateGroupElements(gData);
+                }, this);
             }
         },
 
-        _appendToList: function(index, eData) {
+        _appendToList: function(eData) {
             var that = this;
-            var insertIndex = index - 1;
-            var selected = !!eData.optionElement.attr('selected');
+            var insertIndex = eData.index - 1;
+            var gData = this._groups.get(eData.optionGroup);
 
-            while ((insertIndex >= 0) &&
-                   (!!this._elements[insertIndex].optionElement.attr('selected') != selected) &&
-                   (this._elements[insertIndex].listElement))
-            {
+            var gDataDst = gData[eData.selected?'selected':'available'];
+
+            if ((eData.optionGroup != this._widget.options.defaultGroupName) || this._widget.options.showDefaultGroupHeader) {
+                gDataDst.listElement.show();
+            }
+            gDataDst.listContainer.show(); // animate show?
+
+            while ((insertIndex >= gData.startIndex) &&
+                   (this._elements[insertIndex].selected != eData.selected)) {
                 insertIndex--;
             }
 
-            if (!eData.listElement) {
-                eData.listElement = this._createElement(eData.optionElement, eData.optionGroup);
-
-                if (this._selectionMode) {
-                    eData.listElement[this._selectionMode](function() {
-                        that.setSelected(index, !eData.optionElement.attr('selected'));
-                    });
-                }
-            }
-
-            eData.listElement[(selected?'add':'remove')+'Class']('ui-state-highlight').data('selected', selected).hide();  // setup draggable
-
-            if (insertIndex < 0) {
-                this._listContainers[selected?'selected':'available'].prepend(eData.listElement);
+            if (insertIndex < gData.startIndex) {
+                //console.log("Prepending " + eData.optionElement.val());
+                gDataDst.listContainer.prepend(eData.listElement);
             } else {
                 var prev = this._elements[insertIndex].listElement;
                 // FIX : if previous element is animated, get it's animated parent as reference
                 if (prev.parent().hasClass('ui-effects-wrapper')) {
                     prev = prev.parent();
                 }
+                //console.log("Inserting " + eData.optionElement.val() + " after " + this._elements[insertIndex].optionElement.val());
                 eData.listElement.insertAfter(prev);
             }
+            eData.listElement[(eData.selected?'add':'remove')+'Class']('ui-state-highlight');  // setup draggable
 
-            if (eData.optionGroup) {
-                this._updateGroupElements(index, eData.optionGroup, selected);
-            }
-
-            if ((selected || !eData.filtered) && !this._isOptionCollapsed(eData, selected)) {
-                if (this._moveEffect && this._moveEffect.fn) {
-                    eData.listElement.show(this._moveEffect.fn, this._moveEffect.options, this._moveEffect.speed);
-                } else {
-                    eData.listElement.show();
-                }
-            }
         },
 
         _bufferedMode: function(enabled) {
             if (enabled) {
                 this._oldMoveEffect = this._moveEffect; this._moveEffect = null;
 
-                this._listContainers.selected.detach();
-                this._listContainers.available.detach();
+                // backup lists' scroll position before going into buffered mode
+                this._widget._lists['selected'].data('scrollTop', this._widget._lists['selected'].scrollTop());
+                this._widget._lists['available'].data('scrollTop', this._widget._lists['available'].scrollTop());
+
+                this._listContainers['selected'].detach();
+                this._listContainers['available'].detach();
             } else {
-                this._widget._lists.selected.append(this._listContainers.selected);
-                this._widget._lists.available.append(this._listContainers.available);
+                // restore scroll position (if available)
+                this._widget._lists['selected'].append(this._listContainers['selected'])
+                        .scrollTop( this._widget._lists['selected'].data('scrollTop') || 0 );
+                this._widget._lists['available'].append(this._listContainers['available'])
+                        .scrollTop( this._widget._lists['available'].data('scrollTop') || 0 );
 
                 this._moveEffect = this._oldMoveEffect;
 
@@ -712,39 +792,68 @@
 
 
         clear: function() {
-            clearTimeout(this._procTimeout);
-            this._procTimeout = null;
-
-            this._visibleCount = 0;
             this._elements = [];
-            this._groups = {};
-            this._listContainers.selected.empty();
-            this._listContainers.available.empty();
+            this._groups.clear(this.getComparator());
+            this._listContainers['selected'].empty();
+            this._listContainers['available'].empty();
+
+            this.prepareGroup();  // reset default group
+        },
+
+        getComparator: function() {
+            return this._widget.options.sortMethod
+                 ? typeof this._widget.options.sortMethod == 'function'
+                   ? this._widget.options.sortMethod
+                   : ItemComparators[this._widget.options.sortMethod]
+                 : null;
+        },
+
+        // prepare option group to be rendered (should call reIndex after this!)
+        prepareGroup: function(optGroup) {
+            optGroup = optGroup || this._widget.options.defaultGroupName;
+            if (!this._groups.containsKey[optGroup]) {
+                this._groups.put(optGroup, {
+                    startIndex: -1,
+                    count: 0,
+                    'selected': {
+                        collapsed: false,
+                        count: 0,
+                        listElement: this._createGroupElement(optGroup, true),
+                        listContainer: this._createGroupContainerElement(optGroup, true)
+                    },
+                    'available': {
+                        collapsed: false,
+                        count: 0,
+                        listElement: this._createGroupElement(optGroup, false),
+                        listContainer: this._createGroupContainerElement(optGroup, false)
+                    },
+                    optionGroup: optGroup     // for back ref
+                });
+            }
         },
 
         // prepare option element to be rendered (must call reIndex after this!)
-        prepare: function(optElement, optGroup) {
-            var eData = {
+        // If optGroup is defined, prepareGroup(optGroup) should have been called already
+        prepareOption: function(optElement, optGroup) {
+            this._elements.push({
+                index: -1,
+                selected: !!optElement.attr('selected'),
                 filtered: false,
-                listElement: null,
+                listElement: this._createElement(optElement, optGroup),
                 optionElement: optElement,
-                optionGroup: optGroup
-            };
-
-            this._elements.push(eData);
+                optionGroup: optGroup || this._widget.options.defaultGroupName
+            });
         },
 
         reIndex: function() {
             // note : even if not sorted, options are added as they appear,
             //        so they should be grouped just fine anyway!
-            if (this._widget.options.sortMethod) {
-                var comparator = typeof this._widget.options.sortMethod == 'function'
-                               ? this._widget.options.sortMethod
-                               : ItemComparators[this._widget.options.sortMethod];
+            var comparator = this.getComparator();
+            if (comparator) {
                 this._elements.sort(function(a, b) {
                     if (a.optionGroup || b.optionGroup) {
                         // sort groups
-                        var g = comparator(a.optionGroup, b.optionGroup, true);
+                        var g = comparator(a.optionGroup, b.optionGroup);
                         if (g != 0) return g;
                     }
                     return comparator(a.optionElement.text(), b.optionElement.text());
@@ -753,21 +862,33 @@
 
             this._bufferedMode(true);
 
-            for (var i=0, e, len=this._elements.length; i<len; i++) {
-                e = this._elements[i];
-                if (e.optionGroup) {
-                    if (!this._groups[e.optionGroup]) {
-                        this._groups[e.optionGroup] = {startIndex:i, count:0, collapsed:[false, false], selectedInfo:null, availableInfo:null};
-                    } else if (this._groups[e.optionGroup].startIndex > i) {
-                        this._groups[e.optionGroup].startIndex = i;
-                    }
-                    this._groups[e.optionGroup].count++;
+            this._groups.each(function(g, v, l, defGroupName, showDefGroupName) {
+                l.selected.append(v.selected.listElement.hide());
+                if (g != defGroupName || (g == defGroupName && showDefGroupName)) {
+                    l['available'].append(v['available'].listElement.show());
                 }
-                if (!e.listElement) {
-                    this._appendToList(i, e);
+                l['selected'].append(v['selected'].listContainer.height('auto'));
+                l['available'].append(v['available'].listContainer.height('auto'));
+            }, this._listContainers, this._widget.options.defaultGroupName, this._widget.options.showDefaultGroupHeader);
+
+            for (var i=0, eData, gData, len=this._elements.length; i<len; i++) {
+                eData = this._elements[i];
+                gData = this._groups.get(eData.optionGroup);
+
+                // update group index and count info
+                if (gData.startIndex == -1 || gData.startIndex > i) {
+                    gData.startIndex = i;
+                    gData.count = 1;
+                } else {
+                    gData.count++;
                 }
+
+                eData.index = i;  // save element index for back ref
+
+                this._appendToList(eData);
             }
 
+            this._updateGroupElements();
             this._widget._updateHeaders();
 
             this._bufferedMode(false);
@@ -800,13 +921,11 @@
                 text = false;
             }
 
-            var eData, filtered, selected;
-            for (var i=0; i<count; i++) {
+            for (var i=0, eData, filtered; i<count; i++) {
                 eData = this._elements[i];
                 filtered = !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
-                selected = eData.listElement.data('selected');
 
-                if (!selected && (eData.filtered != filtered) && !this._isOptionCollapsed(eData, selected)) {
+                if (!eData.selected && (eData.filtered != filtered) && !this._isOptionCollapsed(eData)) {
                     eData.listElement[filtered ? 'hide' : 'show']();
                 }
 
@@ -835,7 +954,8 @@
 
             for (var i=0, len=this._elements.length; i<len; i++) {
                 var eData = this._elements[i];
-                if (eData.listElement.data('selected')) {
+
+                if (eData.selected) {
                     info.selected++;
                 } else if (eData.filtered) {
                     info.filtered++;
@@ -847,24 +967,24 @@
             return info;
         },
 
-        setSelected: function(index, selected, silent) {
-            var eData = this.get(index);
-
+        setSelected: function(eData, selected, silent) {
             if (eData.optionElement.attr('disabled') && selected) {
                 return;
             }
 
+            eData.selected = selected;
             if (selected) {
                 eData.optionElement.attr('selected', true);
             } else {
                 eData.optionElement.removeAttr('selected');
             }
 
-            this._appendToList(index, eData);
+            this._appendToList(eData);
 
             if (!silent) {
+                this._updateGroupElements(this._groups.get(eData.optionGroup));
                 this._widget._updateHeaders();
-                this._widget.element.trigger('change', this._createEventUI({ itemIndex:index, selected:selected }) );
+                this._widget.element.trigger('change', this._createEventUI({ itemIndex:eData.index, selected:selected }) );
             }
         },
 
@@ -873,13 +993,14 @@
 
             this._bufferedMode(true);
 
-            for (var i=0, len=this._elements.length; i<len; i++) {
-                var eData = this._elements[i];
-                if (!selected || !(eData.filtered || eData.listElement.data('selected'))) {
-                    this.setSelected(i, selected, true);
+            for (var i=0, eData, len=this._elements.length; i<len; i++) {
+                eData = this._elements[i];
+                if (!selected || !(eData.filtered || eData.selected)) {
+                    this.setSelected(eData, selected, true);
                 }
             }
 
+            this._updateGroupElements();
             this._widget._updateHeaders();
             this._bufferedMode(false);
 

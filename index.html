@@ -34,7 +34,9 @@
                         sortMethod: 'standard'
                     }),
                     'disabled': $.extend({}, defaultOptions),
-                    'groups': $.extend({}, defaultOptions)
+                    'groups': $.extend($.extend({}, defaultOptions), {
+                        showEmptyGroups: true
+                    })
                 };
 
                 $.each(widgets, function(k, i) {
