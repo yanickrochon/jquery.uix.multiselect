@@ -36,15 +36,16 @@
                     'disabled': $.extend({}, defaultOptions),
                     'groups': $.extend($.extend({}, defaultOptions), {
                         showEmptyGroups: true
-                    })
+                    }),
+                    'dynamic': $.extend({}, defaultOptions)
                 };
 
                 $.each(widgets, function(k, i) {
                     $('#multiselect_'+k).multiselect(i).bind('change', function(evt, ui) {
-                        var value = ui.itemIndex == 'all' ? false : $.map($.isArray(ui.itemIndex) ? ui.itemIndex : [ui.itemIndex], function(i) { return ui.optionCache.get(i).optionElement.attr('value'); }).join(', ');
-                        $('#debug_'+k).append( $('<div></div>').text('Multiselect change event! ' + (value ? 'value='+value+' was' : 'all items were') + ' ' + (ui.selected ? 'selected' : 'deselected')) );
+                        var values = $.map(ui.optionElements, function(opt) { return $(opt).attr('value'); }).join(', ');
+                        $('#debug_'+k).prepend( $('<div></div>').text('Multiselect change event! ' + (ui.optionElements.length == $('#multiselect_'+k).find('option').size() ? 'all ' : '') + (ui.optionElements.length + ' value' + (ui.optionElements.length > 1 ? 's were' : ' was')) + ' ' + (ui.selected ? 'selected' : 'deselected') + ' (' + values + ')') );
                     }).bind('multiselectsearch', function(evt, ui) {
-                        $('#debug_'+k).append( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
+                        $('#debug_'+k).prepend( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
                     });
 
                     $('#btnToggleOriginal_'+k).click(function() {
@@ -60,6 +61,30 @@
                     });
 
                 });
+
+                $('#btnGenerate_dynamic').click(function() {
+                    var start = new Date().getTime();
+                    var temp = $('<select></select>');
+                    var count = parseInt($('#txtGenerate_dynamic').val());
+                    for (var i=0; i<count; i++) {
+                        temp.append($('<option></option>').val('item'+(i+1)).text("Item " + (i+1)));
+                    }
+                    $('#multiselect_dynamic').empty().html(temp.html()).multiselect('refresh', function() {
+                        var diff = new Date().getTime() - start;
+                        if (diff > 1000) {
+                            diff /= 1000;
+                            if (diff > 60) {
+                                diff = (diff / 60) + " min";
+                            } else {
+                                diff += " sec";
+                            }
+                        } else {
+                            diff += " ms";
+                        }
+                        $('#debug_dynamic').prepend($('<div></div>').text("Generated " + count + " options in " + diff));
+                    });
+                });
+
 
 
                 $('#selectLocale').change(function() {
@@ -363,7 +388,7 @@
 
             <div class="debug_uiControls">
                 <button id="btnToggleOriginal_simple">Toggle original element</button>
-                <input type="text" id="txtSearch_simple" />
+                <input type="text" id="txtSearch_simple" size="15" />
                 <button id="btnSearch_simple">Search</button>
             </div>
 
@@ -466,7 +491,7 @@
 
             <div class="debug_uiControls">
                 <button id="btnToggleOriginal_disabled">Toggle original element</button>
-                <input type="text" id="txtSearch_disabled" />
+                <input type="text" id="txtSearch_disabled" size="15" />
                 <button id="btnSearch_disabled">Search</button>
             </div>
 
@@ -692,12 +717,32 @@
 
             <div class="debug_uiControls">
                 <button id="btnToggleOriginal_groups">Toggle original element</button>
-                <input type="text" id="txtSearch_groups" />
+                <input type="text" id="txtSearch_groups" size="15" />
                 <button id="btnSearch_groups">Search</button>
             </div>
 
             <div id="debug_groups" class="debug_log"></div>
         </div>
+
+        <div id="usage_dynamic">
+            <form action="" method="get">
+            <h2>Dynamic usage</h2>
+            <div class="example-container ui-helper-clearfix">
+            <select id="multiselect_dynamic" class="multiselect" multiple="multiple"></select>
+            </div>
+            </form>
+
+            <div class="debug_uiControls">
+                <button id="btnToggleOriginal_dynamic">Toggle original element</button>
+                <input type="text" id="txtGenerate_dynamic" size="6" maxlength="5" value="1000" />
+                <button id="btnGenerate_dynamic">Generate options</button>
+                <input type="text" id="txtSearch_dynamic" size="15" />
+                <button id="btnSearch_dynamic">Search</button>
+            </div>
+
+            <div id="debug_dynamic" class="debug_log"></div>
+        </div>
+
 
     </div>
 

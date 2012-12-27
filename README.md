@@ -48,8 +48,8 @@ TODO
 * <del>(de)select all group options</del>
 * <del>add (collapsible) grouped items support</del>
 * <del>selection mode : (drag, click, dblclick, etc.)</del>
+* <del>show empty groups</del>
 * add custom item rendering support *(untested)*
-* show empty groups
 * sortable on selected items
 * test in all browsers *(not fully tested)*
 * code cleanup

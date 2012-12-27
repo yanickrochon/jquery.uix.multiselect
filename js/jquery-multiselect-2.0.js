@@ -582,8 +582,8 @@
 
             return $.extend({
                 optionCache: {
-                    get: function(index) { return this.get.call(that, index); },
-                    size: function() { return this.size.call(that); }
+                    get: function(index) { return that.get(index).optionElement; },
+                    size: function() { return that.size(); }
                 }
             }, data);
         },
@@ -606,7 +606,7 @@
 
                 if (gDataDst.count == 0 && selected) {
                     gDataDst.listElement.hide();
-                    gDataDst.listContainer.height('auto');
+                    //gDataDst.listContainer.height('auto');
                 }
 
                 var t = optGroup + ' (' + gDataDst.count + ')';
@@ -628,14 +628,14 @@
                             var gData = getLocalData();
 
                             if (gData[selected?'selected':'available'].count > 0) {
-                                var _transferedIndex = [];
+                                var _transferedOptions = [];
 
                                 that._bufferedMode(true);
                                 for (var i=gData.startIndex, len=gData.startIndex+gData.count, eData; i<len; i++) {
                                     eData = that._elements[i];
                                     if (!eData.filtered && !eData.selected != selected) {
                                         that.setSelected(eData, !selected, true);
-                                        _transferedIndex.push(i);
+                                        _transferedOptions.push(eData.optionElement[0]);
                                     }
                                 }
 
@@ -644,7 +644,7 @@
 
                                 that._bufferedMode(false);
 
-                                that._widget.element.trigger('change', that._createEventUI({ itemIndex:_transferedIndex, selected:!selected}) );
+                                that._widget.element.trigger('change', that._createEventUI({ optionElements:_transferedOptions, selected:!selected}) );
                             }
 
                             return false;
@@ -867,8 +867,8 @@
                 if (g != defGroupName || (g == defGroupName && showDefGroupName)) {
                     l['available'].append(v['available'].listElement.show());
                 }
-                l['selected'].append(v['selected'].listContainer.height('auto'));
-                l['available'].append(v['available'].listContainer.height('auto'));
+                l['selected'].append(v['selected'].listContainer);
+                l['available'].append(v['available'].listContainer);
             }, this._listContainers, this._widget.options.defaultGroupName, this._widget.options.showDefaultGroupHeader);
 
             for (var i=0, eData, gData, len=this._elements.length; i<len; i++) {
@@ -938,7 +938,6 @@
             if (text && !silent) {
                 this._widget.element.trigger('multiselectsearch', this._createEventUI({ text:text }) );
             }
-
         },
 
         get: function(index) {
@@ -984,12 +983,13 @@
             if (!silent) {
                 this._updateGroupElements(this._groups.get(eData.optionGroup));
                 this._widget._updateHeaders();
-                this._widget.element.trigger('change', this._createEventUI({ itemIndex:eData.index, selected:selected }) );
+                this._widget.element.trigger('change', this._createEventUI({ optionElements:[eData.optionElement[0]], selected:selected }) );
             }
         },
 
         // utility function to select all options
         setSelectedAll: function(selected) {
+            var _transferedOptions = [];
 
             this._bufferedMode(true);
 
@@ -997,6 +997,7 @@
                 eData = this._elements[i];
                 if (!selected || !(eData.filtered || eData.selected)) {
                     this.setSelected(eData, selected, true);
+                    _transferedOptions.push(eData.optionElement[0]);
                 }
             }
 
@@ -1004,7 +1005,7 @@
             this._widget._updateHeaders();
             this._bufferedMode(false);
 
-            this._widget.element.trigger('change', this._createEventUI({ itemIndex:'all', selected:selected }) );
+            this._widget.element.trigger('change', this._createEventUI({ optionElements:_transferedOptions, selected:selected }) );
         }
 
     };
