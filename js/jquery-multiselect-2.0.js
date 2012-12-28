@@ -32,7 +32,7 @@
             showDefaultGroupHeader: false, // show the default option group header (default: false)
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
             splitRatio: 0.55,              // % of the left list's width of the widget total width (default 0.55)
-            sortable: false,               // if the selected list should be user sortable or not  TODO
+            sortable: true,               // if the selected list should be user sortable or not  TODO
             sortMethod: null               // null, 'standard', 'natural'; a sort function name (see ItemComparators) (default: 'standard')
         },
 
@@ -116,8 +116,8 @@
                 'available': avListHeader
             };
             this._lists = {
-                'selected': selListContent,
-                'available': avListContent
+                'selected': selListContent.attr('id', this.scope+'_selListContent'),
+                'available': avListContent.attr('id', this.scope+'_avListContent')
             };
 
             this._applyListDroppable();
@@ -280,6 +280,17 @@
                     that._optionCache.setSelected(getElementData(ui.draggable), true);
                 }
             });
+
+            if (this.options.sortable) {
+                this._lists['selected'].sortable({
+                    appendTo: 'parent',
+                    axis: "y",
+                    containment: "parent",
+                    items: '.multiselect-element-wrapper',
+                    handle: '.group-element',
+                    revert: true
+                });
+            }
 
             this._lists['available'].droppable({
                 accept: function(draggable) {
@@ -588,6 +599,15 @@
             }, data);
         },
 
+        _createDragHelper: function(e, optGroup) {
+            return $('<div></div>')
+                .addClass('dragged'+(optGroup?'-grouped':'')+'-element ui-widget ui-widget-content ui-state-active ui-corner-all')
+                .append(e.clone())
+                .width(e.outerWidth())
+                .height(e.outerHeight())
+                [0];
+        },
+
         _createGroupElement: function(optGroup, selected) {
             var that = this;
             var gData;
@@ -656,10 +676,30 @@
         },
 
         _createGroupContainerElement: function(optGroup, selected) {
+            var that = this;
             var e = $('<div></div>');
 
-            if (/* sortable */ false) {
-
+            if (this._widget.options.sortable && selected) {
+                e.sortable({
+                    tolerance: "pointer",
+                    appendTo: this._widget._elementWrapper,
+                    connectWith: this._widget._lists['available'].attr('id'),
+                    scope: this._widget.scope,
+                    helper: function(evt) {
+                        return that._createDragHelper($(evt.srcElement), optGroup);
+                    },
+                    beforeStop: function(evt, ui) {
+                        var e = that._elements[that.indexOf(ui.item.data('option-value'))];
+                        // FIX : this event occurs AFTER the element was deselcted, thus the sortable performs a "cancel" operation...
+                        //       we need to reset the element back with buffered mode so it is silent!
+                        if (!e.selected) {
+                            that._bufferedMode(true);
+                            that.setSelected(e, false, true);
+                            that._bufferedMode(false);
+                        }
+                    },
+                    revert: true
+                });
             }
 
             return e;
@@ -685,6 +725,7 @@
             if (optElement.attr('disabled')) {
                 e.addClass('ui-state-disabled');
             } else if (this._widget.options.selectionMode.indexOf('d&d') > -1) {
+                var that = this;
                 e.draggable({
                     appendTo: "body",
                     scope: this._widget.scope,
@@ -695,13 +736,7 @@
                         $(this).removeClass('ui-state-disabled ui-state-active');
                     },
                     helper: function() {
-                        var e = $(this).children(':last');
-                        return $('<div></div>')
-                            .addClass('dragged'+(optGroup?'-grouped':'')+'-element ui-widget ui-widget-content ui-state-active ui-corner-all')
-                            .append(e.clone())
-                            .width(e.outerWidth())
-                            .height(e.outerHeight())
-                            [0];
+                        return that._createDragHelper($(this).children(':last'), optGroup);
                     },
                     revert: 'invalid',
                     zIndex: 99999
@@ -762,8 +797,18 @@
                 //console.log("Inserting " + eData.optionElement.val() + " after " + this._elements[insertIndex].optionElement.val());
                 eData.listElement.insertAfter(prev);
             }
-            eData.listElement[(eData.selected?'add':'remove')+'Class']('ui-state-highlight');  // setup draggable
+            eData.listElement[(eData.selected?'add':'remove')+'Class']('ui-state-highlight');
 
+            if (eData.listElement.is(":ui-draggable")) {
+                eData.listElement
+                    .draggable('option', 'disabled', this._widget.options.sortable && eData.selected)
+                    .removeClass('ui-state-disabled')
+                ;
+            }
+
+            if ((eData.selected || !eData.filtered) && !this._isOptionCollapsed(eData) && this._moveEffect && this._moveEffect.fn) {
+                eData.listElement.hide().show(this._moveEffect.fn, this._moveEffect.options, this._moveEffect.speed);
+            }
         },
 
         _bufferedMode: function(enabled) {
@@ -863,12 +908,17 @@
             this._bufferedMode(true);
 
             this._groups.each(function(g, v, l, defGroupName, showDefGroupName) {
-                l.selected.append(v.selected.listElement.hide());
+                var wrapper_selected = $('<div></div>').addClass('multiselect-element-wrapper');
+                var wrapper_available = $('<div></div>').addClass('multiselect-element-wrapper');
+                wrapper_selected.append(v.selected.listElement.hide());
                 if (g != defGroupName || (g == defGroupName && showDefGroupName)) {
-                    l['available'].append(v['available'].listElement.show());
+                    wrapper_available.append(v['available'].listElement.show());
                 }
-                l['selected'].append(v['selected'].listContainer);
-                l['available'].append(v['available'].listContainer);
+                wrapper_selected.append(v['selected'].listContainer);
+                wrapper_available.append(v['available'].listContainer);
+
+                l['selected'].append(wrapper_selected);
+                l['available'].append(wrapper_available);
             }, this._listContainers, this._widget.options.defaultGroupName, this._widget.options.showDefaultGroupHeader);
 
             for (var i=0, eData, gData, len=this._elements.length; i<len; i++) {
@@ -901,12 +951,13 @@
 
         indexOf: function(value) {
             var index = -1;
-            $.each(this._elements, function(i, eData) {
-                if (eData.optionElement.attr('value') == value) {
+
+            for (var i=0, len=this._elements.length; i<len; i++) {
+                if (this._elements[i].optionElement.attr('value') == value) {
                     index = i;
-                    return false;
+                    break;
                 }
-            });
+            }
             return index;
         },
 
@@ -995,7 +1046,7 @@
 
             for (var i=0, eData, len=this._elements.length; i<len; i++) {
                 eData = this._elements[i];
-                if (!selected || !(eData.filtered || eData.selected)) {
+                if (!((eData.selected == selected) || (eData.optionElement.attr('disabled') || (selected && (eData.filtered || eData.selected))))) {
                     this.setSelected(eData, selected, true);
                     _transferedOptions.push(eData.optionElement[0]);
                 }
