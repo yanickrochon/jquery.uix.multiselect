@@ -31,11 +31,13 @@
 
                 var widgets = {
                     'simple': $.extend($.extend({}, defaultOptions), {
-                        sortMethod: 'standard'
+                        sortMethod: 'standard',
+                        sortable: true
                     }),
                     'disabled': $.extend({}, defaultOptions),
                     'groups': $.extend($.extend({}, defaultOptions), {
-                        showEmptyGroups: true
+                        showEmptyGroups: true,
+                        sortable: true
                     }),
                     'dynamic': $.extend({}, defaultOptions)
                 };

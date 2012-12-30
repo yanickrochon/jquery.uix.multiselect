@@ -49,8 +49,13 @@ TODO
 * <del>add (collapsible) grouped items support</del>
 * <del>selection mode : (drag, click, dblclick, etc.)</del>
 * <del>show empty groups</del>
+* <del>sortable on selected items</del>
 * add custom item rendering support *(untested)*
-* sortable on selected items
 * test in all browsers *(not fully tested)*
 * code cleanup
 * etc.
+
+Known Issues
+------------
+
+* When setting `sortable` otpion to `true`, invoking the `refresh` method loses user selection ordering.
