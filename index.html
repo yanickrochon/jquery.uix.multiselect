@@ -36,6 +36,7 @@
                     }),
                     'disabled': $.extend({}, defaultOptions),
                     'groups': $.extend($.extend({}, defaultOptions), {
+                        sortMethod: 'standard',
                         showEmptyGroups: true,
                         sortable: true
                     }),
@@ -63,6 +64,7 @@
                         } else {
                             _m.toggle().next().toggle();
                         }
+                        return false;
                     });
                     $('#btnSearch_'+k).click(function() {
                         $('#multiselect_'+k).multiselect('search', $('#txtSearch_'+k).val());

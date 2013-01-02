@@ -46,10 +46,10 @@ TODO
 
 * <del>add disabled items support</del>
 * <del>(de)select all group options</del>
-* <del>add (collapsible) grouped items support</del>
+* <del>add (collapsable) grouped items support</del>
 * <del>selection mode : (drag, click, dblclick, etc.)</del>
 * <del>show empty groups</del>
-* <del>sortable on selected items</del>
+* <del>sortable on selected items</del> *(still has known issues)*
 * <del>add custom item rendering support</del> *(untested)*
 * test in all browsers *(not fully tested)*
 * code cleanup
@@ -67,4 +67,4 @@ Limitations
 Known Issues
 ------------
 
-* When setting `sortable` otpion to `true`, invoking the `refresh` method loses user selection ordering.
+* When setting `sortable` otpion to `true`, invoking the `refresh` does not restore original user ordering.

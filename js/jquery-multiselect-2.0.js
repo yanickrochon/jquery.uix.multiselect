@@ -12,7 +12,6 @@
  * Depends:
  * jQuery UI 1.8+
  *
- *
  */
 
 (function($) {
@@ -21,7 +20,7 @@
     // The jQuery.uix namespace will automatically be created if it doesn't exist
     $.widget("uix.multiselect", {
         options: {
-            collapsibleGroups: true,       // tells whether the option groups can be collapsed or not (default: true)
+            collapsableGroups: true,       // tells whether the option groups can be collapsed or not (default: true)
             defaultGroupName: '',          // the name of the default option group (default: '')
             filterSelected: false,         // when searching, filter selected options also? (default: false)
             locale: 'auto',                // any valid locale, 'auto', or '' for default built-in strings (default: 'auto')
@@ -463,8 +462,10 @@
         }
     };
 
-
-    var SortedMap = function(comp) {
+    /**
+     * Map of all option groups
+     */
+    var GroupMap = function(comp) {
         // private members
 
         var keys = [];
@@ -504,9 +505,11 @@
                     keys.splice((function() {
                         var low = 0, high = keys.length;
                         var mid = -1, c = 0;
-                        while (low < high)   {
+                        while (low < high) {
                             mid = parseInt((low + high)/2);
-                            c = comparator(keys[mid], val);
+                            var a = items[keys[mid]].groupElement;
+                            var b = val.groupElement;
+                            c = comparator(a ? a.attr('label') : DEF_OPTGROUP, b ? b.attr('label') : DEF_OPTGROUP);
                             if (c < 0)   {
                                 low = mid + 1;
                             } else if (c > 0) {
@@ -599,7 +602,7 @@
         };
 
         this._elements = [];
-        this._groups = new SortedMap(this.getComparator());
+        this._groups = new GroupMap(this.getComparator());
 
         this._moveEffect = {
             fn: widget.options.moveEffect,
@@ -704,7 +707,7 @@
             ;
 
             var fnToggle;
-            if (this._widget.options.collapsibleGroups) {
+            if (this._widget.options.collapsableGroups) {
                 var h = $('<span></span>').addClass('ui-icon collapse-handle')
                     .attr('data-localekey', 'collapseGroup')
                     .attr('title', this._widget._t('collapseGroup'))
@@ -886,7 +889,6 @@
         },
 
         _reorderSelected: function(optGroup) {
-            // FIXME : selected elements order are not preserved if elements can be sorted!
             var e = this._elements;
             var g = this._groups.get(optGroup);
             var container = g.groupElement ? g.groupElement : this._widget.element;
@@ -900,6 +902,27 @@
                 }
                 prevElement = currElement;
             });
+        },
+
+        _reapplySelectionOrder: function(gData) {
+            if (gData) {
+                var that = this;
+                (gData.groupElement || this._widget.element).children('option:selected').each(function() {
+                    // FIXME : doesn't work too good...
+                    var eData = that._elements[$(this).data('element-index')];
+                    var eDataNext = that._elements[$(this).next('option:selected').data('element-index')];
+                    if (eDataNext) {
+                        eData.listElement.insertAfter(eDataNext.listElement);
+                    } else {
+                        eData.listElement.parent().append(eData.listElement);
+                    }
+                });
+            } else {
+                // FIXME : OPTION elements user ordering is re-applied, but not OPTGROUP elements
+                this._groups.each(function(k,gData,that) {
+                    that._reapplySelectionOrder(gData);
+                }, this);
+            }
         },
 
         _bufferedMode: function(enabled) {
@@ -989,19 +1012,24 @@
             //        so they should be grouped just fine anyway!
             var comparator = this.getComparator();
             if (comparator) {
+                var _groups = this._groups;
                 this._elements.sort(function(a, b) {
-                    if (a.optionGroup || b.optionGroup) {
-                        // sort groups
-                        var g = comparator(a.optionGroup, b.optionGroup);
-                        if (g != 0) return g;
-                    }
-                    return comparator(a.optionElement.text(), b.optionElement.text());
+                    // sort groups
+                    var ga = _groups.get(a.optionGroup).groupElement;
+                    var gb = _groups.get(b.optionGroup).groupElement;
+                    var g = comparator(ga ? ga.attr('label') : DEF_OPTGROUP, gb ? gb.attr('label') : DEF_OPTGROUP);
+                    if (g != 0) return g;
+                    else        return comparator(a.optionElement.text(), b.optionElement.text());
                 });
             }
 
             this._bufferedMode(true);
 
             this._groups.each(function(g, v, l, showDefGroupName) {
+                if (v.groupElement) {
+                    v.groupElement.data('option-group', g);  // for back ref
+                }
+                //console.log(g);
                 var wrapper_selected = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
                 var wrapper_available = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
                 wrapper_selected.append(v.selected.listElement.hide());
@@ -1029,8 +1057,13 @@
 
                 // save element index for back ref
                 eData.listElement.data('element-index', eData.index = i);
+                eData.optionElement.data('element-index', i);  // also save for back ref here
 
                 this._appendToList(eData);
+            }
+
+            if (this._widget.options.sortable) {
+                this._reapplySelectionOrder();
             }
 
             this._updateGroupElements();
