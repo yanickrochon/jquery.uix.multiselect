@@ -50,10 +50,19 @@ TODO
 * <del>selection mode : (drag, click, dblclick, etc.)</del>
 * <del>show empty groups</del>
 * <del>sortable on selected items</del>
-* add custom item rendering support *(untested)*
+* <del>add custom item rendering support</del> *(untested)*
 * test in all browsers *(not fully tested)*
 * code cleanup
 * etc.
+
+
+Limitations
+-----------
+
+* When setting `sortable` option to `true`, options can only be reordered within their own groups. That is, an option cannot be
+  reordered between two options of a different group. As this widget's purpose is not to extend the original element's behaviour
+  beyound user interaction and persentation, this limitation shall not be lifted for the time being.
+
 
 Known Issues
 ------------

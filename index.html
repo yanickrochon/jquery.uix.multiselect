@@ -48,6 +48,12 @@
                         $('#debug_'+k).prepend( $('<div></div>').text('Multiselect change event! ' + (ui.optionElements.length == $('#multiselect_'+k).find('option').size() ? 'all ' : '') + (ui.optionElements.length + ' value' + (ui.optionElements.length > 1 ? 's were' : ' was')) + ' ' + (ui.selected ? 'selected' : 'deselected') + ' (' + values + ')') );
                     }).bind('multiselectsearch', function(evt, ui) {
                         $('#debug_'+k).prepend( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
+                    }).closest('form').submit(function(evt) {
+                        evt.preventDefault(); evt.stopPropagation();
+
+                        $('#debug_'+k).prepend( $('<div></div>').text("Submit query = " + $(this).serialize() ) );
+
+                        return false;
                     });
 
                     $('#btnToggleOriginal_'+k).click(function() {
@@ -138,7 +144,7 @@
             <form action="" method="get">
             <h2>Simple usage</h2>
             <div class="example-container ui-helper-clearfix">
-            <select id="multiselect_simple" class="multiselect" multiple="multiple">
+            <select id="multiselect_simple" name="multiselect" class="multiselect" multiple="multiple">
                 <option value="ABW">Aruba</option>
                 <option value="AFG">Afghanistan</option>
                 <option value="AGO">Angola</option>
@@ -386,21 +392,23 @@
                 <option value="ZMB">Zambia</option>
                 <option value="ZWE">Zimbabwe</option></select>
             </div>
-            </form>
 
             <div class="debug_uiControls">
                 <button id="btnToggleOriginal_simple">Toggle original element</button>
                 <input type="text" id="txtSearch_simple" size="15" />
                 <button id="btnSearch_simple">Search</button>
+                <input type="submit" value="Submit" />
             </div>
+            </form>
 
             <div id="debug_simple" class="debug_log"></div>
         </div>
 
         <div id="usage_disabled">
+            <form action="" method="get">
             <h2>Disabled options</h2>
             <div class="example-container ui-helper-clearfix">
-            <select id="multiselect_disabled" class="multiselect" multiple="multiple">
+            <select id="multiselect_disabled" name="multiselect" class="multiselect" multiple="multiple">
                 <option value="And">Andromeda</option>
                 <option value="Ant" disabled="disabled">Antlia</option>
                 <option value="Aps" disabled="disabled">Apus</option>
@@ -495,15 +503,18 @@
                 <button id="btnToggleOriginal_disabled">Toggle original element</button>
                 <input type="text" id="txtSearch_disabled" size="15" />
                 <button id="btnSearch_disabled">Search</button>
+                <input type="submit" value="Submit" />
             </div>
+            </form>
 
             <div id="debug_disabled" class="debug_log"></div>
         </div>
 
         <div id="usage_groups">
+            <form action="" method="get">
             <h2>Group related options</h2>
             <div class="example-container ui-helper-clearfix">
-            <select id="multiselect_groups" class="multiselect" multiple="multiple">
+            <select id="multiselect_groups" name="multiselect" class="multiselect" multiple="multiple">
             <optgroup label="Australia">
                 <option value="Holden">Holden</option>
             </optgroup><optgroup label="Belgium">
@@ -721,7 +732,9 @@
                 <button id="btnToggleOriginal_groups">Toggle original element</button>
                 <input type="text" id="txtSearch_groups" size="15" />
                 <button id="btnSearch_groups">Search</button>
+                <input type="submit" value="Submit" />
             </div>
+            </form>
 
             <div id="debug_groups" class="debug_log"></div>
         </div>
@@ -730,9 +743,8 @@
             <form action="" method="get">
             <h2>Dynamic usage</h2>
             <div class="example-container ui-helper-clearfix">
-            <select id="multiselect_dynamic" class="multiselect" multiple="multiple"></select>
+            <select id="multiselect_dynamic" name="multiselect" class="multiselect" multiple="multiple"></select>
             </div>
-            </form>
 
             <div class="debug_uiControls">
                 <button id="btnToggleOriginal_dynamic">Toggle original element</button>
@@ -740,7 +752,9 @@
                 <button id="btnGenerate_dynamic">Generate options</button>
                 <input type="text" id="txtSearch_dynamic" size="15" />
                 <button id="btnSearch_dynamic">Search</button>
+                <input type="submit" value="Submit" />
             </div>
+            </form>
 
             <div id="debug_dynamic" class="debug_log"></div>
         </div>

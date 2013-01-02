@@ -23,6 +23,7 @@
         options: {
             collapsibleGroups: true,       // tells whether the option groups can be collapsed or not (default: true)
             defaultGroupName: '',          // the name of the default option group (default: '')
+            filterSelected: false,         // when searching, filter selected options also? (default: false)
             locale: 'auto',                // any valid locale, 'auto', or '' for default built-in strings (default: 'auto')
             moveEffect: null,              // 'blind','bounce','clip','drop','explode','fold','highlight','puff','pulsate','shake','slide' (default: null)
             moveEffectOptions: {},         // effect options (see jQuery UI documentation) (default: {})
@@ -277,7 +278,7 @@
                     ui.draggable.removeClass('ui-state-disabled');
                     ui.helper.remove();
 
-                    that._optionCache.setSelected(getElementData(ui.draggable), true);
+                    that._optionCache.setSelected(getElementData(ui.draggable), true, true);
                 }
             });
 
@@ -665,45 +666,67 @@
                 labelCount.text(t).attr('title', t);
             };
 
+            var e = $('<div></div>')
+                .addClass('ui-widget-header ui-priority-secondary group-element')
+                .append( $('<button></button>').addClass('uix-control-right')
+                    .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
+                    .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
+                    .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
+                    .click(function(e) {
+                        e.preventDefault(); e.stopPropagation();
+
+                        var gDataDst = getLocalData()[selected?'selected':'available'];
+
+                        if (gData.count > 0) {
+                            var _transferedOptions = [];
+
+                            that._bufferedMode(true);
+                            for (var i=gData.startIndex, len=gData.startIndex+gData.count, eData; i<len; i++) {
+                                eData = that._elements[i];
+                                if (!eData.filtered && !eData.selected != selected) {
+                                    that.setSelected(eData, !selected, true);
+                                    _transferedOptions.push(eData.optionElement[0]);
+                                }
+                            }
+
+                            that._updateGroupElements(gData);
+                            that._widget._updateHeaders();
+
+                            that._bufferedMode(false);
+
+                            that._widget.element.trigger('change', that._createEventUI({ optionElements:_transferedOptions, selected:!selected}) );
+                        }
+
+                        return false;
+                    })
+                )
+                .append(labelCount)
+            ;
+
+            var fnToggle;
+            if (this._widget.options.collapsibleGroups) {
+                var h = $('<span></span>').addClass('ui-icon collapse-handle')
+                    .attr('data-localekey', 'collapseGroup')
+                    .attr('title', this._widget._t('collapseGroup'))
+                    .addClass('ui-icon-triangle-1-s')
+                    .mousedown(function(e) { e.stopPropagation(); })
+                    .click(function(e) { e.preventDefault(); e.stopPropagation(); fnToggle(); return false; })
+                    .prependTo(e.addClass('group-element-collapsable'))
+                ;
+
+                fnToggle = function() {
+                    var gDataDst = getLocalData()[selected?'selected':'available'];
+                    gDataDst.collapsed = !gDataDst.collapsed;
+                    gDataDst.listContainer.slideToggle();  // animate options?
+                    h.removeClass('ui-icon-triangle-1-' + (gDataDst.collapsed ? 's' : 'e'))
+                     .addClass('ui-icon-triangle-1-' + (gDataDst.collapsed ? 'e' : 's'));
+                };
+            }
             return $('<div></div>')
                 // create an utility function to update group element count
                 .data('fnUpdateCount', fnUpdateCount)
-                .append($('<div></div>')
-                    .addClass('ui-widget-header ui-priority-secondary group-element')
-                    .append( $('<button></button>').addClass('uix-control-right')
-                        .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
-                        .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
-                        .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
-                        .click(function(e) {
-                            e.preventDefault(); e.stopPropagation();
-
-                            var gData = getLocalData();
-
-                            if (gData[selected?'selected':'available'].count > 0) {
-                                var _transferedOptions = [];
-
-                                that._bufferedMode(true);
-                                for (var i=gData.startIndex, len=gData.startIndex+gData.count, eData; i<len; i++) {
-                                    eData = that._elements[i];
-                                    if (!eData.filtered && !eData.selected != selected) {
-                                        that.setSelected(eData, !selected, true);
-                                        _transferedOptions.push(eData.optionElement[0]);
-                                    }
-                                }
-
-                                that._updateGroupElements(gData);
-                                that._widget._updateHeaders();
-
-                                that._bufferedMode(false);
-
-                                that._widget.element.trigger('change', that._createEventUI({ optionElements:_transferedOptions, selected:!selected}) );
-                            }
-
-                            return false;
-                        })
-                    )
-                    .append(labelCount)
-                )
+                .data('fnToggle', fnToggle || $.noop)
+                .append(e)
             ;
         },
 
@@ -734,6 +757,14 @@
                         that._reorderSelected(optGroup);
                     },
                     revert: true
+                });
+            }
+
+            if (this._selectionMode) {
+                $(e).on(this._selectionMode, 'div.option-element', function() {
+                    var eData = that._elements[$(this).data('element-index')];
+                    eData.listElement.removeClass('ui-state-hover');
+                    that.setSelected(eData, !selected);
                 });
             }
 
@@ -812,7 +843,11 @@
             if ((eData.optionGroup != this._widget.options.defaultGroupName) || this._widget.options.showDefaultGroupHeader) {
                 gDataDst.listElement.show();
             }
-            gDataDst.listContainer.show(); // animate show?
+            if (gDataDst.collapsed) {
+                gDataDst.listElement.data('fnToggle')(); // animate show?
+            } else {
+                gDataDst.listContainer.show();
+            }
 
             if (eData.selected && this._widget.options.sortable) {
                 gDataDst.listContainer.append(eData.listElement);
@@ -845,6 +880,8 @@
 
             if ((eData.selected || !eData.filtered) && !this._isOptionCollapsed(eData) && this._moveEffect && this._moveEffect.fn) {
                 eData.listElement.hide().show(this._moveEffect.fn, this._moveEffect.options, this._moveEffect.speed);
+            } else if (eData.filtered) {
+                eData.listElement.hide();
             }
         },
 
@@ -1012,6 +1049,7 @@
             this._bufferedMode(true);
 
             var count = this._elements.length;
+            var filterSelected = this._widget.options.filterSelected;
 
             text = (''+text).toLowerCase();
             if (text.length == 0) {
@@ -1022,7 +1060,7 @@
                 eData = this._elements[i];
                 filtered = !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
 
-                if (!eData.selected && (eData.filtered != filtered) && !this._isOptionCollapsed(eData)) {
+                if ((!eData.selected || filterSelected) && (eData.filtered != filtered)) {
                     eData.listElement[filtered ? 'hide' : 'show']();
                 }
 
