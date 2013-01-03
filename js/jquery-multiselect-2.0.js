@@ -614,7 +614,7 @@
             var fnUpdateCount = function() {
                 var gDataDst = getLocalData()[selected?'selected':'available'];
 
-                gDataDst.listElement[gDataDst.count == 0 && selected ? 'hide' : 'show']();
+                gDataDst.listElement[!selected || (gDataDst.count && ((gData.optionGroup != DEF_OPTGROUP) || that._widget.options.showDefaultGroupHeader)) ? 'show' : 'hide']();
 
                 var t = getGroupName() + ' (' + gDataDst.count + ')';
                 labelCount.text(t).attr('title', t);
@@ -734,12 +734,12 @@
                 .data('element-index', -1)
                 .hover(
                     function() {
-                        if (optElement.attr('selected')) $(this).removeClass('ui-state-highlight');
+                        if (optElement.prop('selected')) $(this).removeClass('ui-state-highlight');
                         $(this).addClass('ui-state-hover');
                     },
                     function() {
                         $(this).removeClass('ui-state-hover');
-                        if (optElement.attr('selected')) $(this).addClass('ui-state-highlight');
+                        if (optElement.prop('selected')) $(this).addClass('ui-state-highlight');
                     }
                 );
             if (optElement.attr('disabled')) {
@@ -952,7 +952,7 @@
                 optGroup = optGroup || DEF_OPTGROUP;
                 this._elements.push({
                     index: -1,
-                    selected: !!optElement.attr('selected'),
+                    selected: false,
                     filtered: false,
                     listElement: this._createElement(optElement, optGroup),
                     optionElement: optElement,
@@ -980,8 +980,10 @@
             this._bufferedMode(true);
 
             this._groups.each(function(g, v, l, showDefGroupName) {
-                if (v.groupElement && !v.groupElement.data('option-group')) {
-                    v.groupElement.data('option-group', g);  // for back ref
+                if (!(v.groupElement && v.groupElement.data('option-group'))) {
+                    if (v.groupElement) {
+                        v.groupElement.data('option-group', g);  // for back ref
+                    }
 
                     //console.log(g);
                     var wrapper_selected = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
@@ -1013,7 +1015,8 @@
                 // save element index for back ref
                 eData.listElement.data('element-index', eData.index = i);
 
-                if (eData.optionElement.data('element-index') === undefined) {
+                if (eData.optionElement.data('element-index') != i || eData.selected != eData.optionElement.prop('selected')) {
+                    eData.selected = eData.optionElement.prop('selected');
                     eData.optionElement.data('element-index', i);  // also save for back ref here
 
                     this._appendToList(eData);
@@ -1085,12 +1088,7 @@
                 return;
             }
 
-            eData.selected = selected;
-            if (selected) {
-                eData.optionElement.attr('selected', true);
-            } else {
-                eData.optionElement.removeAttr('selected');
-            }
+            eData.optionElement.prop('selected', eData.selected = selected);
 
             this._appendToList(eData);
 
