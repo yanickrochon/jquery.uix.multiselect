@@ -17,6 +17,12 @@
 (function($) {
     var globalScope = 0;
 
+    var DEF_OPTGROUP = '';
+    var PRE_OPTGROUP = 'group-';
+
+    var EVENT_CHANGE = 'multiselectChange';
+    var EVENT_SEARCH = 'multiselectSearch';
+
     // The jQuery.uix namespace will automatically be created if it doesn't exist
     $.widget("uix.multiselect", {
         options: {
@@ -541,10 +547,6 @@
 
     };
 
-
-    var DEF_OPTGROUP = '';
-    var PRE_OPTGROUP = 'group-';
-
     var OptionCache = function(widget) {
         this._widget = widget;
         this._listContainers = {
@@ -574,14 +576,10 @@
 
     OptionCache.prototype = {
         _createEventUI: function(data) {
-            var that = this;
+            //var that = this;
 
-            return $.extend({
-                optionCache: {
-                    get: function(index) { return that.get(index).optionElement; },
-                    size: function() { return that.size(); }
-                }
-            }, data);
+            return data;
+            //return $.extend({}, data);
         },
 
         _createDragHelper: function(e, optGroup) {
@@ -614,7 +612,7 @@
             var fnUpdateCount = function() {
                 var gDataDst = getLocalData()[selected?'selected':'available'];
 
-                gDataDst.listElement[!selected || (gDataDst.count && ((gData.optionGroup != DEF_OPTGROUP) || that._widget.options.showDefaultGroupHeader)) ? 'show' : 'hide']();
+                gDataDst.listElement[(!selected && (gDataDst.count || that._widget.options.showEmptyGroups)) || (gDataDst.count && ((gData.optionGroup != DEF_OPTGROUP) || that._widget.options.showDefaultGroupHeader)) ? 'show' : 'hide']();
 
                 var t = getGroupName() + ' (' + gDataDst.count + ')';
                 labelCount.text(t).attr('title', t);
@@ -648,7 +646,7 @@
 
                             that._bufferedMode(false);
 
-                            that._widget.element.trigger('change', that._createEventUI({ optionElements:_transferedOptions, selected:!selected}) );
+                            that._widget.element.trigger(EVENT_CHANGE, that._createEventUI({ optionElements:_transferedOptions, selected:!selected}) );
                         }
 
                         return false;
@@ -1036,6 +1034,17 @@
 
         filter: function(text, silent) {
 
+            if (text && !silent) {
+                var evt = $.Event(EVENT_SEARCH);
+                var ui  = this._createEventUI({ text:text });
+                this._widget.element.trigger(evt, ui );
+                if (evt.isDefaultPrevented()) {
+                    return;
+                } else {
+                    text = ui.text;  // update text
+                }
+            }
+
             this._bufferedMode(true);
 
             var count = this._elements.length;
@@ -1060,9 +1069,6 @@
             this._widget._updateHeaders();
             this._bufferedMode(false);
 
-            if (text && !silent) {
-                this._widget.element.trigger('multiselectsearch', this._createEventUI({ text:text }) );
-            }
         },
 
         getSelectionInfo: function() {
@@ -1098,7 +1104,7 @@
                 }
                 this._updateGroupElements(this._groups.get(eData.optionGroup));
                 this._widget._updateHeaders();
-                this._widget.element.trigger('change', this._createEventUI({ optionElements:[eData.optionElement[0]], selected:selected }) );
+                this._widget.element.trigger(EVENT_CHANGE, this._createEventUI({ optionElements:[eData.optionElement[0]], selected:selected }) );
             }
         },
 
@@ -1127,7 +1133,7 @@
             this._widget._updateHeaders();
             this._bufferedMode(false);
 
-            this._widget.element.trigger('change', this._createEventUI({ optionElements:_transferedOptions, selected:selected }) );
+            this._widget.element.trigger(EVENT_CHANGE, this._createEventUI({ optionElements:_transferedOptions, selected:selected }) );
         }
 
     };

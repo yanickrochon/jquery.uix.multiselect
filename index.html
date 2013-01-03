@@ -44,10 +44,10 @@
                 };
 
                 $.each(widgets, function(k, i) {
-                    $('#multiselect_'+k).multiselect(i).bind('change', function(evt, ui) {
+                    $('#multiselect_'+k).multiselect(i).bind('multiselectChange', function(evt, ui) {
                         var values = $.map(ui.optionElements, function(opt) { return $(opt).attr('value'); }).join(', ');
                         $('#debug_'+k).prepend( $('<div></div>').text('Multiselect change event! ' + (ui.optionElements.length == $('#multiselect_'+k).find('option').size() ? 'all ' : '') + (ui.optionElements.length + ' value' + (ui.optionElements.length > 1 ? 's were' : ' was')) + ' ' + (ui.selected ? 'selected' : 'deselected') + ' (' + values + ')') );
-                    }).bind('multiselectsearch', function(evt, ui) {
+                    }).bind('multiselectSearch', function(evt, ui) {
                         $('#debug_'+k).prepend( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
                     }).closest('form').submit(function(evt) {
                         evt.preventDefault(); evt.stopPropagation();
@@ -134,6 +134,10 @@
     <body>
 
     <div id="content">
+
+        <a href="https://github.com/yanickrochon/jquery.multiselect-2">
+            <img style="position: fixed; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub">
+        </a>
 
         <h1>Welcome to the jQuery Multiselect 2.0 Widget !</h1>
 

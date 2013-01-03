@@ -69,3 +69,5 @@ Known Issues
 
 * When setting the `sortable` option to `true` and not all options are grouped (ie. child of an `OPTGROUP` element), the user
   reordering *might* not be preserved after `refresh`. Thie issue shall be documented and eventually fixed (if necessary) later on.
+* Users are required to select the element, *then* reorder it in the selected list. This should be corrected to directly drag and
+  drop to the user desired location, just like in the previous version of the widget.
