@@ -42,6 +42,7 @@
             var btnSearch, btnSelectAll, btnDeselectAll;
 
             this.scope = 'multiselect' + (globalScope++);
+            this.optionGroupIndex = 1;
             this._setLocale(this.options.locale);
 
             this.element.hide();
@@ -143,44 +144,41 @@
          * @param callback   function    a callback function called when the refresh is complete
          */
         refresh: function(callback) {
-            var that = this;
+            AsyncFunction(function() {
+                this._resize();
+                this._optionCache.cleanup();
 
-            setTimeout(function() {
-                that._resize();
-                that._optionCache.clear();
-
-                var options = that.element[0].childNodes;
-                var opt, optGroupIndex = 1;
+                var opt, options = this.element[0].childNodes;
 
                 for (var i=0, l1=options.length; i<l1; i++) {
                     opt = options[i];
                     if (opt.nodeType == 1) {
                         if (opt.tagName.toUpperCase() == 'OPTGROUP') {
-                            var optGroup = PRE_OPTGROUP + (optGroupIndex++);
+                            var optGroup = $(opt).data('option-group') || (PRE_OPTGROUP + (this.optionGroupIndex++));
                             var grpOptions = opt.childNodes;
 
-                            that._optionCache.prepareGroup($(opt), optGroup);
+                            this._optionCache.prepareGroup($(opt), optGroup);
 
                             for (var j=0, l2=grpOptions.length; j<l2; j++) {
                                 opt = grpOptions[j];
                                 if (opt.nodeType == 1) {
-                                    that._optionCache.prepareOption($(opt), optGroup);
+                                    this._optionCache.prepareOption($(opt), optGroup);
                                 }
                             }
                         } else {
-                            that._optionCache.prepareOption($(opt));  // add to default group
+                            this._optionCache.prepareOption($(opt));  // add to default group
                         }
                     }
                 }
 
-                that._optionCache.reIndex();
+                this._optionCache.reIndex();
 
-                if (that._searchField.is(':visible')) {
-                    that._search(null, true);
+                if (this._searchField.is(':visible')) {
+                    this._search(null, true);
                 }
 
                 if (callback) callback();
-            }, 10);
+            }, 10, this);
 
         },
 
@@ -277,7 +275,7 @@
                     ui.draggable.removeClass('ui-state-disabled');
                     ui.helper.remove();
 
-                    that._optionCache.setSelected(getElementData(ui.draggable), true, true);
+                    that._optionCache.setSelected(getElementData(ui.draggable), true);
                 }
             });
 
@@ -293,9 +291,9 @@
                         var prevGroup;
                         $('.multiselect-element-wrapper', that._lists['selected']).each(function() {
                             var currGroup = that._optionCache._groups.get($(this).data('option-group'));
-                            if (!prevGroup) {
+                            if (!(prevGroup && prevGroup.groupElement)) {
                                 that.element.append(currGroup.groupElement);
-                            } else {
+                            } else if (currGroup.groupElement) {
                                 currGroup.groupElement.insertAfter(prevGroup.groupElement);
                             }
                             prevGroup = currGroup;
@@ -432,6 +430,15 @@
     };
 
 
+    /**
+     * setTimeout on steroids!
+     */
+    var AsyncFunction = function(callback, timeout, self) {
+        var args = Array.prototype.slice.call(arguments, 3);
+        return setTimeout(function() {
+            callback.apply(self, args);
+        }, timeout);
+    };
 
 
     var SearchDelayed = function(widget, options) {
@@ -444,16 +451,14 @@
         request: function() {
             if (this._widget._searchField.val() == this._lastSearchValue) return;  // prevent searching twice same term
 
-            var that = this;
-
             this.cancelLastRequest();
 
-            this._timeout = setTimeout(function() {
-                that._timeout = null;
-                that._lastSearchValue = that._widget._searchField.val();
+            this._timeout = AsyncFunction(function() {
+                this._timeout = null;
+                this._lastSearchValue = this._widget._searchField.val();
 
-                that._widget._search();
-            }, this._options.delay);
+                this._widget._search();
+            }, this._options.delay, this);
         },
         cancelLastRequest: function() {
             if (this._timeout) {
@@ -472,32 +477,23 @@
         var items = {};
         var comparator = comp;
 
+        this.items = items;
+
         // public methods
 
         this.clear = function(comp) {
             keys = [];
-            items = {};
+            this.items = items = {};
             comparator = comp;
         };
 
         this.containsKey = function(key) {
-            return items[key] ? true : false;
+            return !!items[key];
         };
 
         this.get = function(key) {
             return items[key];
         };
-
-        /**
-         * @Unused
-        this.containsValue = function(val) {
-            var found = false;
-            $.each(items, function(k, v) {
-                if (v == val) found = true;
-            });
-            return found;
-        };
-        */
 
         this.put = function(key, val) {
             if (!items[key]) {
@@ -528,6 +524,11 @@
             items[key] = val;
         };
 
+        this.remove = function(key) {
+            delete items[key];
+            keys.splice(keys.indexOf(key), 1);
+        };
+
         this.each = function(callback) {
             var args = Array.prototype.slice.call(arguments, 1);
             args.splice(0, 0, null, null);
@@ -538,56 +539,6 @@
             }
         };
 
-        /**
-         * @Unused
-        this.first = function() {
-            return keys[0];
-        };
-        */
-
-        /**
-         * @Unused
-        this.last = function() {
-            return keys[keys.length - 1];
-        };
-        */
-
-        /**
-         * Return the next key for the given one
-         * @param key string
-         * @return string
-         */
-        /**
-         * @Unused
-        this.next = function(key) {
-            var index = keys.indexOf(key);
-
-            if (index > keys.length - 2) return undefined;
-            else return keys[index + 1];
-        };
-        */
-
-        /**
-         * Return the previous key for the given one
-         * @param key string
-         * @return string
-         */
-        /**
-         * @Unused
-        this.previous = function(key) {
-            var index = keys.indexOf(key);
-
-            if (index < 1) return undefined;
-            else return keys[index - 1];
-        };
-        */
-
-        /**
-         * @Unused
-        this.size = function() {
-            return keys.length;
-        };
-        */
     };
 
 
@@ -602,7 +553,7 @@
         };
 
         this._elements = [];
-        this._groups = new GroupMap(this.getComparator());
+        this._groups = new GroupMap();
 
         this._moveEffect = {
             fn: widget.options.moveEffect,
@@ -612,6 +563,8 @@
 
         this._selectionMode = this._widget.options.selectionMode.indexOf('dblclick') > -1 ? 'dblclick'
                             : this._widget.options.selectionMode.indexOf('click') > -1 ? 'click' : false;
+
+        this.clear();
     };
 
     OptionCache.Options = {
@@ -661,9 +614,7 @@
             var fnUpdateCount = function() {
                 var gDataDst = getLocalData()[selected?'selected':'available'];
 
-                if (gDataDst.count == 0 && selected) {
-                    gDataDst.listElement.hide();
-                }
+                gDataDst.listElement[gDataDst.count == 0 && selected ? 'hide' : 'show']();
 
                 var t = getGroupName() + ' (' + gDataDst.count + ')';
                 labelCount.text(t).attr('title', t);
@@ -904,27 +855,6 @@
             });
         },
 
-        _reapplySelectionOrder: function(gData) {
-            if (gData) {
-                var that = this;
-                (gData.groupElement || this._widget.element).children('option:selected').each(function() {
-                    // FIXME : doesn't work too good...
-                    var eData = that._elements[$(this).data('element-index')];
-                    var eDataNext = that._elements[$(this).next('option:selected').data('element-index')];
-                    if (eDataNext) {
-                        eData.listElement.insertAfter(eDataNext.listElement);
-                    } else {
-                        eData.listElement.parent().append(eData.listElement);
-                    }
-                });
-            } else {
-                // FIXME : OPTION elements user ordering is re-applied, but not OPTGROUP elements
-                this._groups.each(function(k,gData,that) {
-                    that._reapplySelectionOrder(gData);
-                }, this);
-            }
-        },
-
         _bufferedMode: function(enabled) {
             if (enabled) {
                 this._oldMoveEffect = this._moveEffect; this._moveEffect = null;
@@ -959,6 +889,28 @@
             this.prepareGroup();  // reset default group
         },
 
+        cleanup: function() {
+            var p = this._widget.element[0];
+            var _groupsRemoved = [];
+            this._groups.each(function(g,v) {
+                if (v.groupElement && !$.contains(p, v.groupElement[0])) {
+                    _groupsRemoved.push(g);
+                }
+            });
+            for (var i=0, len=_groupsRemoved.length; i<len; i++) {
+                this._groups.remove(_groupsRemoved[i]);
+
+            }
+            for (var i=0; i<this._elements.length; i++) {
+                if (!$.contains(p, this._elements[i].optionElement[0]) || (_groupsRemoved.indexOf(this._elements[i].optGroup) > -1)) {
+                    this._elements[i].listElement.remove();
+                    this._elements.splice(i--, 1);
+                }
+            }
+
+            this.prepareGroup();  // make sure we have the default group still!
+        },
+
         getComparator: function() {
             return this._widget.options.sortMethod
                  ? typeof this._widget.options.sortMethod == 'function'
@@ -970,7 +922,7 @@
         // prepare option group to be rendered (should call reIndex after this!)
         prepareGroup: function(grpElement, optGroup) {
             optGroup = optGroup || DEF_OPTGROUP;
-            if (!this._groups.containsKey[optGroup]) {
+            if (!this._groups.containsKey(optGroup)) {
                 //var groupLabel = grpElement ? grpElement.attr('label') : this._widget.options.defaultGroupName;
                 this._groups.put(optGroup, {
                     startIndex: -1,
@@ -996,15 +948,17 @@
         // prepare option element to be rendered (must call reIndex after this!)
         // If optGroup is defined, prepareGroup(optGroup) should have been called already
         prepareOption: function(optElement, optGroup) {
-            optGroup = optGroup || DEF_OPTGROUP;
-            this._elements.push({
-                index: -1,
-                selected: !!optElement.attr('selected'),
-                filtered: false,
-                listElement: this._createElement(optElement, optGroup),
-                optionElement: optElement,
-                optionGroup: optGroup
-            });
+            if (optElement.data('element-index') === undefined) {
+                optGroup = optGroup || DEF_OPTGROUP;
+                this._elements.push({
+                    index: -1,
+                    selected: !!optElement.attr('selected'),
+                    filtered: false,
+                    listElement: this._createElement(optElement, optGroup),
+                    optionElement: optElement,
+                    optionGroup: optGroup
+                });
+            }
         },
 
         reIndex: function() {
@@ -1026,21 +980,22 @@
             this._bufferedMode(true);
 
             this._groups.each(function(g, v, l, showDefGroupName) {
-                if (v.groupElement) {
+                if (v.groupElement && !v.groupElement.data('option-group')) {
                     v.groupElement.data('option-group', g);  // for back ref
-                }
-                //console.log(g);
-                var wrapper_selected = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
-                var wrapper_available = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
-                wrapper_selected.append(v.selected.listElement.hide());
-                if (g != DEF_OPTGROUP || (g == DEF_OPTGROUP && showDefGroupName)) {
-                    wrapper_available.append(v['available'].listElement.show());
-                }
-                wrapper_selected.append(v['selected'].listContainer);
-                wrapper_available.append(v['available'].listContainer);
 
-                l['selected'].append(wrapper_selected);
-                l['available'].append(wrapper_available);
+                    //console.log(g);
+                    var wrapper_selected = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
+                    var wrapper_available = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
+                    wrapper_selected.append(v.selected.listElement.hide());
+                    if (g != DEF_OPTGROUP || (g == DEF_OPTGROUP && showDefGroupName)) {
+                        wrapper_available.append(v['available'].listElement.show());
+                    }
+                    wrapper_selected.append(v['selected'].listContainer);
+                    wrapper_available.append(v['available'].listContainer);
+
+                    l['selected'].append(wrapper_selected);
+                    l['available'].append(wrapper_available);
+                }
             }, this._listContainers, this._widget.options.showDefaultGroupHeader);
 
             for (var i=0, eData, gData, len=this._elements.length; i<len; i++) {
@@ -1048,7 +1003,7 @@
                 gData = this._groups.get(eData.optionGroup);
 
                 // update group index and count info
-                if (gData.startIndex == -1 || gData.startIndex > i) {
+                if (gData.startIndex == -1 || gData.startIndex >= i) {
                     gData.startIndex = i;
                     gData.count = 1;
                 } else {
@@ -1057,13 +1012,12 @@
 
                 // save element index for back ref
                 eData.listElement.data('element-index', eData.index = i);
-                eData.optionElement.data('element-index', i);  // also save for back ref here
 
-                this._appendToList(eData);
-            }
+                if (eData.optionElement.data('element-index') === undefined) {
+                    eData.optionElement.data('element-index', i);  // also save for back ref here
 
-            if (this._widget.options.sortable) {
-                this._reapplySelectionOrder();
+                    this._appendToList(eData);
+                }
             }
 
             this._updateGroupElements();
