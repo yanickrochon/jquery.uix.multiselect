@@ -67,4 +67,5 @@ Limitations
 Known Issues
 ------------
 
-* When setting `sortable` otpion to `true`, invoking the `refresh` does not restore original user ordering.
+* When setting the `sortable` option to `true` and not all options are grouped (ie. child of an `OPTGROUP` element), the user
+  reordering *might* not be preserved after `refresh`. Thie issue shall be documented and eventually fixed (if necessary) later on.
