@@ -51,6 +51,7 @@ TODO
 * <del>show empty groups</del>
 * <del>sortable on selected items</del> *(still has known issues)*
 * <del>add custom item rendering support</del> *(untested)*
+* Make all options as mutable as possible after initialization.
 * test in all browsers *(not fully tested)*
 * code cleanup
 * etc.
