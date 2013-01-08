@@ -330,6 +330,9 @@
 
         },
 
+        /**
+         * return false if the event was prevented by an handler, true otherwise
+         */
         _triggerUIEvent: function(event, ui) {
             if (typeof event == 'string') {
                 event = $.Event(event);
@@ -337,7 +340,7 @@
 
             this.element.trigger(event, ui);
 
-            return event.isDefaultPrevented();
+            return !event.isDefaultPrevented();
         },
 
         _setOption: function(key, value) {
