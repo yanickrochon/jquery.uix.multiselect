@@ -679,6 +679,7 @@
                             var e = that._elements[_received_index];
                             ui.item.replaceWith(e.listElement.addClass('ui-state-highlight').draggable('disable').removeClass('ui-state-disabled'));
                             that._reorderSelected(e.optionGroup);
+                            that._widget._updateHeaders();
                             _received_index = undefined;
                         } else {
                             var e = that._elements[ui.item.data('element-index')];
