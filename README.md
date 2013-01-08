@@ -49,7 +49,7 @@ TODO
 * <del>add (collapsable) grouped items support</del>
 * <del>selection mode : (drag, click, dblclick, etc.)</del>
 * <del>show empty groups</del>
-* <del>sortable on selected items</del> *(still has known issues)*
+* <del>sortable on selected items</del>
 * <del>add custom item rendering support</del> *(untested)*
 * Make all options as mutable as possible after initialization.
 * test in all browsers *(not fully tested)*
@@ -63,12 +63,3 @@ Limitations
 * When setting `sortable` option to `true`, options can only be reordered within their own groups. That is, an option cannot be
   reordered between two options of a different group. As this widget's purpose is not to extend the original element's behaviour
   beyound user interaction and persentation, this limitation shall not be lifted for the time being.
-
-
-Known Issues
-------------
-
-* When setting the `sortable` option to `true` and not all options are grouped (ie. child of an `OPTGROUP` element), the user
-  reordering *might* not be preserved after `refresh`. Thie issue shall be documented and eventually fixed (if necessary) later on.
-* Users are required to select the element, *then* reorder it in the selected list. This should be corrected to directly drag and
-  drop to the user desired location, just like in the previous version of the widget.

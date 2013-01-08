@@ -3,10 +3,10 @@
  *
  * Authors:
  *  Yanick Rochon (yanick.rochon[at]gmail[dot]com)
- * 
+ *
  * Dual licensed under the MIT (MIT-LICENSE.txt)
  * and GPL (GPL-LICENSE.txt) licenses.
- * 
+ *
  * http://mind2soft.com/labs/jquery/multiselect/
  *
  *
@@ -25,6 +25,10 @@
         itemsAvailable_plural: '{count} available options',
         //itemsAvailable_plural_two: ...
         //itemsAvailable_plural_few: ...
+        itemsFiltered: '{count} option filtered',
+        itemsFiltered_plural: '{count} options filtered',
+        //itemsFiltered_plural_two: ...
+        //itemsFiltered_plural_few: ...
         selectAll: 'Select all',
         deselectAll: 'Deselect all',
         search: 'Search options',

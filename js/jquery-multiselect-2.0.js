@@ -39,7 +39,7 @@
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
             splitRatio: 0.55,              // % of the left list's width of the widget total width (default 0.55)
             sortable: false,               // if the selected list should be user sortable or not
-            sortMethod: null               // null, 'standard', 'natural'; a sort function name (see ItemComparators) (default: 'standard')
+            sortMethod: null               // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
         },
 
         _create: function() {
@@ -127,10 +127,10 @@
                 'available': avListContent.attr('id', this.scope+'_avListContent')
             };
 
-            this._applyListDroppable();
-
             this._optionCache = new OptionCache(this);
             this._searchDelayed = new SearchDelayed(this, {delay: 500});
+
+            this._applyListDroppable();
 
             this.refresh();
         },
@@ -265,62 +265,31 @@
         _applyListDroppable: function() {
             if (this.options.selectionMode.indexOf('d&d') == -1) return;
 
-            var that = this;
+            var _optionCache = this._optionCache;
+            var currentScope = this.scope;
 
             var getElementData = function(d) {
-                return that._optionCache._elements[d.data('element-index')];
+                return _optionCache._elements[d.data('element-index')];
             };
 
-            this._lists['selected'].droppable({
-                accept: function(draggable) {
-                    return !getElementData(draggable).selected;  // not selected only
-                },
-                activeClass: 'ui-state-highlight',
-                scope: this.scope,
-                drop: function(evt, ui) {
-                    ui.draggable.removeClass('ui-state-disabled');
-                    ui.helper.remove();
-
-                    that._optionCache.setSelected(getElementData(ui.draggable), true);
-                }
-            });
-
-            if (this.options.sortable) {
-                this._lists['selected'].sortable({
-                    appendTo: 'parent',
-                    axis: "y",
-                    containment: $('.multiselect-selected-list', this._elementWrapper), //"parent",
-                    items: '.multiselect-element-wrapper',
-                    handle: '.group-element',
-                    revert: true,
-                    stop: function(evt, ui) {
-                        var prevGroup;
-                        $('.multiselect-element-wrapper', that._lists['selected']).each(function() {
-                            var currGroup = that._optionCache._groups.get($(this).data('option-group'));
-                            if (!(prevGroup && prevGroup.groupElement)) {
-                                that.element.append(currGroup.groupElement);
-                            } else if (currGroup.groupElement) {
-                                currGroup.groupElement.insertAfter(prevGroup.groupElement);
-                            }
-                            prevGroup = currGroup;
-                        });
+            var initDroppable = function(e, s) {
+                e.droppable({
+                    accept: function(draggable) {
+                        var eData = getElementData(draggable);
+                        return eData && (eData.selected != s);  // from different seleciton only
+                    },
+                    activeClass: 'ui-state-highlight',
+                    scope: currentScope,
+                    drop: function(evt, ui) {
+                        ui.draggable.removeClass('ui-state-disabled');
+                        ui.helper.remove();
+                        _optionCache.setSelected(getElementData(ui.draggable), s);
                     }
                 });
             }
 
-            this._lists['available'].droppable({
-                accept: function(draggable) {
-                    return getElementData(draggable).selected;  // selected only
-                },
-                activeClass: 'ui-state-highlight',
-                scope: this.scope,
-                drop: function(evt, ui) {
-                    ui.draggable.removeClass('ui-state-disabled');
-                    ui.helper.remove();
-
-                    that._optionCache.setSelected(getElementData(ui.draggable), false);
-                }
-            });
+            initDroppable(this._lists['selected'], true);
+            initDroppable(this._lists['available'], false);
         },
 
         _updateControls: function() {
@@ -331,12 +300,21 @@
         },
 
         _updateHeaders: function() {
-            var info = this._optionCache.getSelectionInfo();
+            var t, info = this._optionCache.getSelectionInfo();
 
-            this._headers['selected'].text( this._t('itemsSelected', info.selected, {count:info.selected}) );
-            this._headers['available'].text( this._t('itemsAvailable', info.available, {count:info.available}) );
-            //this._headers['available'].attr('title',  this._t(...., info.filtered, {count:info.filtered}) );
-
+            this._headers['selected']
+                .text( t = this._t('itemsSelected', info.selected.total, {count:info.selected.total}) )
+                .parent().attr('title',
+                    this.options.filterSelected
+                    ? this._t('itemsSelected', info.selected.count, {count:info.selected.count}) + ", " +
+                      this._t('itemsFiltered', info.selected.filtered, {count:info.selected.filtered})
+                    : t
+                );
+            this._headers['available']
+                .text( this._t('itemsAvailable', info.available.total, {count:info.available.total}) )
+                .parent().attr('title',
+                    this._t('itemsAvailable', info.available.count, {count:info.available.count}) + ", " +
+                    this._t('itemsFiltered', info.available.filtered, {count:info.available.filtered}) );
         },
 
         // call this method whenever the widget resizes
@@ -350,6 +328,16 @@
             this._lists['selected'].height(this.element.height() - this._headers['selected'].parent().height());
             this._lists['available'].height(this.element.height() - this._headers['available'].parent().height());
 
+        },
+
+        _triggerUIEvent: function(event, ui) {
+            if (typeof event == 'string') {
+                event = $.Event(event);
+            }
+
+            this.element.trigger(event, ui);
+
+            return event.isDefaultPrevented();
         },
 
         _setOption: function(key, value) {
@@ -442,7 +430,7 @@
     var AsyncFunction = function(callback, timeout, self) {
         var args = Array.prototype.slice.call(arguments, 3);
         return setTimeout(function() {
-            callback.apply(self, args);
+            callback.apply(self || window, args);
         }, timeout);
     };
 
@@ -476,7 +464,7 @@
     /**
      * Map of all option groups
      */
-    var GroupMap = function(comp) {
+    var GroupCache = function(comp) {
         // private members
 
         var keys = [];
@@ -487,10 +475,10 @@
 
         // public methods
 
-        this.clear = function(comp) {
+        this.clear = function() {
             keys = [];
             this.items = items = {};
-            comparator = comp;
+            return this;
         };
 
         this.containsKey = function(key) {
@@ -528,11 +516,12 @@
             }
 
             items[key] = val;
+            return this;
         };
 
         this.remove = function(key) {
             delete items[key];
-            keys.splice(keys.indexOf(key), 1);
+            return keys.splice(keys.indexOf(key), 1);
         };
 
         this.each = function(callback) {
@@ -543,6 +532,7 @@
                 args[1] = items[keys[i]];
                 callback.apply(args[1], args);
             }
+            return this;
         };
 
     };
@@ -555,7 +545,7 @@
         };
 
         this._elements = [];
-        this._groups = new GroupMap();
+        this._groups = new GroupCache();
 
         this._moveEffect = {
             fn: widget.options.moveEffect,
@@ -575,23 +565,6 @@
     };
 
     OptionCache.prototype = {
-        _createEventUI: function(data) {
-            //var that = this;
-
-            return data;
-            //return $.extend({}, data);
-        },
-
-        _createDragHelper: function(e, optGroup) {
-            return $('<div></div>')
-                .addClass('dragged'+(optGroup==DEF_OPTGROUP?'':'-grouped')+'-element ui-widget ui-widget-content ui-state-active ui-corner-all')
-                .data('option-group', optGroup)
-                .append(e.clone())
-                .width(e.outerWidth())
-                .height(e.outerHeight())
-                [0];
-        },
-
         _createGroupElement: function(grpElement, optGroup, selected) {
             var that = this;
             var gData;
@@ -646,7 +619,7 @@
 
                             that._bufferedMode(false);
 
-                            that._widget.element.trigger(EVENT_CHANGE, that._createEventUI({ optionElements:_transferedOptions, selected:!selected}) );
+                            that._widget._triggerUIEvent(EVENT_CHANGE, { optionElements:_transferedOptions, selected:!selected} );
                         }
 
                         return false;
@@ -685,6 +658,7 @@
         _createGroupContainerElement: function(grpElement, optGroup, selected) {
             var that = this;
             var e = $('<div></div>');
+            var _received_index;
 
             if (this._widget.options.sortable && selected) {
                 e.sortable({
@@ -692,21 +666,28 @@
                     appendTo: this._widget._elementWrapper,
                     connectWith: this._widget._lists['available'].attr('id'),
                     scope: this._widget.scope,
-                    helper: function(evt) {
-                        return that._createDragHelper($(evt.srcElement), optGroup);
-                    },
-                    beforeStop: function(evt, ui) {
-                        var e = that._elements[ui.item.data('element-index')];
-                        // FIX : this event occurs AFTER the element was deselcted, thus the sortable performs a "cancel" operation...
-                        //       we need to reset the element back with buffered mode so it is silent!
-                        if (!e.selected) {
-                            that._bufferedMode(true);
-                            that.setSelected(e, false, true);
-                            that._bufferedMode(false);
-                        }
+                    helper: 'clone',
+                    receive: function(evt, ui) {
+                        var e = that._elements[_received_index = ui.item.data('element-index')];
+
+                        e.selected = true;
+                        e.optionElement.prop('selected', true);
+                        e.listElement.removeClass('ui-state-active');
                     },
                     stop: function(evt, ui) {
-                        that._reorderSelected(optGroup);
+                        if (_received_index) {
+                            var e = that._elements[_received_index];
+                            ui.item.replaceWith(e.listElement.addClass('ui-state-highlight').draggable('disable').removeClass('ui-state-disabled'));
+                            that._reorderSelected(e.optionGroup);
+                            _received_index = undefined;
+                        } else {
+                            var e = that._elements[ui.item.data('element-index')];
+                            if (e && !e.selected) {
+                                that._bufferedMode(true);
+                                that._appendToList(e);
+                                that._bufferedMode(false);
+                            }
+                        }
                     },
                     revert: true
                 });
@@ -745,20 +726,24 @@
             } else if (this._widget.options.selectionMode.indexOf('d&d') > -1) {
                 var that = this;
                 e.draggable({
-                    appendTo: "body",
+                    addClasses: false,
+                    appendTo: this._widget._elementWrapper,
                     scope: this._widget.scope,
                     start: function(evt, ui) {
                         $(this).addClass('ui-state-disabled ui-state-active');
+                        ui.helper.width($(this).width()).height($(this).height());
                     },
                     stop: function(evt, ui) {
                         $(this).removeClass('ui-state-disabled ui-state-active');
                     },
-                    helper: function() {
-                        return that._createDragHelper($(this).children(':last'), optGroup);
-                    },
+                    helper: 'clone',
                     revert: 'invalid',
                     zIndex: 99999
                 });
+
+                if (this._widget.options.sortable) {
+                    e.draggable('option', 'connectToSortable', this._groups.get(optGroup)['selected'].listContainer);
+                }
             }
             if (optGroup) {
                 e.addClass('grouped-option').prepend($('<span></span>').addClass('ui-icon ui-icon-bullet'));
@@ -802,7 +787,7 @@
             }
 
             if (eData.selected && this._widget.options.sortable) {
-                gDataDst.listContainer.append(eData.listElement);
+                gDataDst.listContainer.append(eData.listElement/*.draggable('disable')*/);
             } else {
                 var insertIndex = eData.index - 1;
                 while ((insertIndex >= gData.startIndex) &&
@@ -983,7 +968,6 @@
                         v.groupElement.data('option-group', g);  // for back ref
                     }
 
-                    //console.log(g);
                     var wrapper_selected = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
                     var wrapper_available = $('<div></div>').addClass('multiselect-element-wrapper').data('option-group', g);
                     wrapper_selected.append(v.selected.listElement.hide());
@@ -1028,20 +1012,14 @@
 
         },
 
-        size: function() {
-            return this._elements.length;
-        },
-
         filter: function(text, silent) {
 
             if (text && !silent) {
-                var evt = $.Event(EVENT_SEARCH);
-                var ui  = this._createEventUI({ text:text });
-                this._widget.element.trigger(evt, ui );
-                if (evt.isDefaultPrevented()) {
-                    return;
-                } else {
+                var ui = { text:text };
+                if (this._widget._triggerUIEvent(EVENT_SEARCH, ui )) {
                     text = ui.text;  // update text
+                } else {
+                    return;
                 }
             }
 
@@ -1072,18 +1050,12 @@
         },
 
         getSelectionInfo: function() {
-            var info = { selected: 0, available: 0, filtered: 0 };
+            var info = {'selected': {'total': 0, 'count': 0, 'filtered': 0}, 'available': {'total': 0, 'count': 0, 'filtered': 0} };
 
             for (var i=0, len=this._elements.length; i<len; i++) {
                 var eData = this._elements[i];
-
-                if (eData.selected) {
-                    info.selected++;
-                } else if (eData.filtered) {
-                    info.filtered++;
-                } else {
-                    info.available++;
-                }
+                info[eData.selected?'selected':'available'][eData.filtered?'filtered':'count']++;
+                info[eData.selected?'selected':'available'].total++;
             }
 
             return info;
@@ -1104,7 +1076,7 @@
                 }
                 this._updateGroupElements(this._groups.get(eData.optionGroup));
                 this._widget._updateHeaders();
-                this._widget.element.trigger(EVENT_CHANGE, this._createEventUI({ optionElements:[eData.optionElement[0]], selected:selected }) );
+                this._widget._triggerUIEvent(EVENT_CHANGE, { optionElements:[eData.optionElement[0]], selected:selected } );
             }
         },
 
@@ -1133,7 +1105,7 @@
             this._widget._updateHeaders();
             this._bufferedMode(false);
 
-            this._widget.element.trigger(EVENT_CHANGE, this._createEventUI({ optionElements:_transferedOptions, selected:selected }) );
+            this._widget._triggerUIEvent(EVENT_CHANGE, { optionElements:_transferedOptions, selected:selected } );
         }
 
     };
@@ -1184,6 +1156,10 @@
             itemsAvailable_plural: '{count} available options',
             //itemsAvailable_plural_two: ...
             //itemsAvailable_plural_few: ...
+            itemsFiltered: '{count} option filtered',
+            itemsFiltered_plural: '{count} options filtered',
+            //itemsFiltered_plural_two: ...
+            //itemsFiltered_plural_few: ...
             selectAll: 'Select All',
             deselectAll: 'Deselect All',
             search: 'Search Options',
