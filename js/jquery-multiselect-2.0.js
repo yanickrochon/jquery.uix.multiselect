@@ -763,8 +763,10 @@
             if (gData) {
                 gData['selected'].count = 0;
                 gData['available'].count = 0;
+                gData.count = 0;
                 for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
                     gData[this._elements[i].selected?'selected':'available'].count++;
+                    gData.count++;
                 }
                 gData['selected'].listElement.data('fnUpdateCount')();
                 gData['available'].listElement.data('fnUpdateCount')();
@@ -876,6 +878,7 @@
             this.prepareGroup();  // reset default group
         },
 
+        // should call _reIndex after this
         cleanup: function() {
             var p = this._widget.element[0];
             var _groupsRemoved = [];
@@ -884,15 +887,14 @@
                     _groupsRemoved.push(g);
                 }
             });
+            for (var i=0, eData; i<this._elements.length; i++) {
+                eData = this._elements[i];
+                if (!$.contains(p, eData.optionElement[0]) || (_groupsRemoved.indexOf(eData.optionGroup) > -1)) {
+                    this._elements.splice(i--, 1)[0].listElement.remove();
+                }
+            }
             for (var i=0, len=_groupsRemoved.length; i<len; i++) {
                 this._groups.remove(_groupsRemoved[i]);
-
-            }
-            for (var i=0; i<this._elements.length; i++) {
-                if (!$.contains(p, this._elements[i].optionElement[0]) || (_groupsRemoved.indexOf(this._elements[i].optGroup) > -1)) {
-                    this._elements[i].listElement.remove();
-                    this._elements.splice(i--, 1);
-                }
             }
 
             this.prepareGroup();  // make sure we have the default group still!
@@ -984,6 +986,7 @@
                     l['selected'].append(wrapper_selected);
                     l['available'].append(wrapper_available);
                 }
+                v.count = 0;
             }, this._listContainers, this._widget.options.showDefaultGroupHeader);
 
             for (var i=0, eData, gData, len=this._elements.length; i<len; i++) {
@@ -994,14 +997,12 @@
                 if (gData.startIndex == -1 || gData.startIndex >= i) {
                     gData.startIndex = i;
                     gData.count = 1;
-                } else {
-                    gData.count++;
                 }
 
                 // save element index for back ref
                 eData.listElement.data('element-index', eData.index = i);
 
-                if (eData.optionElement.data('element-index') != i || eData.selected != eData.optionElement.prop('selected')) {
+                if (eData.optionElement.data('element-index') == undefined || eData.selected != eData.optionElement.prop('selected')) {
                     eData.selected = eData.optionElement.prop('selected');
                     eData.optionElement.data('element-index', i);  // also save for back ref here
 
@@ -1011,6 +1012,7 @@
 
             this._updateGroupElements();
             this._widget._updateHeaders();
+            this._groups.each(function(g,v,t) { t._reorderSelected(g); }, this);
 
             this._bufferedMode(false);
 
@@ -1029,7 +1031,6 @@
 
             this._bufferedMode(true);
 
-            var count = this._elements.length;
             var filterSelected = this._widget.options.filterSelected;
 
             text = (''+text).toLowerCase();
@@ -1037,15 +1038,16 @@
                 text = false;
             }
 
-            for (var i=0, eData, filtered; i<count; i++) {
+            for (var i=0, eData, len=this._elements.length, filtered; i<len; i++) {
                 eData = this._elements[i];
                 filtered = !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
 
                 if ((!eData.selected || filterSelected) && (eData.filtered != filtered)) {
                     eData.listElement[filtered ? 'hide' : 'show']();
+                    eData.filtered = filtered;
+                } else if (eData.selected) {
+                    eData.filtered = false;
                 }
-
-                eData.filtered = filtered;
             }
 
             this._widget._updateHeaders();

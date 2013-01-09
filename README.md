@@ -40,6 +40,8 @@ To programmatically select/deselect, add/modify/remove items, you may access and
 
     $('selector').multiselect('destroy');  // restore original element
 
+See [wiki documentation](https://github.com/yanickrochon/jquery.multiselect-2/wiki) for more information.
+
 
 TODO
 ----
