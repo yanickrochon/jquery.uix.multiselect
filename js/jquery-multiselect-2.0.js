@@ -474,13 +474,11 @@
         var items = {};
         var comparator = comp;
 
-        this.items = items;
-
         // public methods
 
         this.clear = function() {
             keys = [];
-            this.items = items = {};
+            items = {};
             return this;
         };
 
@@ -763,10 +761,8 @@
             if (gData) {
                 gData['selected'].count = 0;
                 gData['available'].count = 0;
-                gData.count = 0;
                 for (var i=gData.startIndex, len=gData.startIndex+gData.count; i<len; i++) {
                     gData[this._elements[i].selected?'selected':'available'].count++;
-                    gData.count++;
                 }
                 gData['selected'].listElement.data('fnUpdateCount')();
                 gData['available'].listElement.data('fnUpdateCount')();
@@ -997,6 +993,8 @@
                 if (gData.startIndex == -1 || gData.startIndex >= i) {
                     gData.startIndex = i;
                     gData.count = 1;
+                } else {
+                    gData.count++;
                 }
 
                 // save element index for back ref
