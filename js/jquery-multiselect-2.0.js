@@ -34,6 +34,8 @@
             moveEffectOptions: {},         // effect options (see jQuery UI documentation) (default: {})
             moveEffectSpeed: null,         // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
             optionRenderer: false,         // a function that will return the item element to be rendered in the list (default: false)
+            rtl: false,                    // if set to true, put selected list to the right hand side of the widget (default: false)
+            searchField: 'toggle',         // false, true, 'toggle'; set the search field behaviour (default: 'toggle')
             selectionMode: 'click,d&d',    // how options can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'dblclick,d&d')
             showDefaultGroupHeader: false, // show the default option group header (default: false)
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
@@ -45,7 +47,7 @@
         _create: function() {
             var that = this;
             var selListHeader, selListContent, avListHeader, avListContent;
-            var btnSearch, btnSelectAll, btnDeselectAll;
+            var btnSelectAll, btnDeselectAll;
 
             this.scope = 'multiselect' + (globalScope++);
             this.optionGroupIndex = 1;
@@ -70,40 +72,14 @@
                         )
                         .append( selListContent = $('<div></div>').addClass('uix-list-container ui-widget-content ui-corner-bl') )
                 )
-                .append(
+                [this.options.rtl?'prepend':'append'](
                     $('<div></div>').addClass('multiselect-available-list')
-                        .append( $('<div></div>').addClass('ui-widget-header ui-corner-tr')//.text('Available items')
+                        .append( $('<div></div>').addClass('ui-widget-header ui-corner-tr')
                             .append( btnSelectAll = $('<button></button>').addClass('uix-control-right')
                                 .attr('data-localekey', 'selectAll')
                                 .attr('title', this._t('selectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false})
                                 .click(function(e) { e.preventDefault(); e.stopPropagation(); that._optionCache.setSelectedAll(true); return false; })
-                            )
-                            .append( btnSearch = $('<button></button').addClass('uix-control-right')
-                                .attr('data-localekey', 'search')
-                                .attr('title', this._t('search'))
-                                .button({icons:{primary:'ui-icon-search'}, text:false})
-                                .click(function(e) {
-                                    e.preventDefault(); e.stopPropagation();
-                                    if (that._searchField.is(':visible')) {
-                                        var b = $(this);
-                                        avListHeader.css('visibility', 'visible').fadeTo('fast', 1.0);
-                                        that._searchField.hide('slide', {direction: 'right'}, 200, function() { b.removeClass('ui-corner-right ui-state-active').addClass('ui-corner-all'); });
-                                        that._searchDelayed.cancelLastRequest();
-                                        that._optionCache.filter('');
-                                    } else {
-                                        avListHeader.fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
-                                        $(this).removeClass('ui-corner-all').addClass('ui-corner-right ui-state-active');
-                                        that._searchField.show('slide', {direction: 'right'}, 200, function() { $(this).focus(); });
-                                        that._search();
-                                    }
-                                    return false;
-                                })
-                            )
-                            .append( this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-left').hide()
-                                .focus(function() { $(this).select(); })
-                                .keyup(function() { that._searchDelayed.request(); })
-                                //
                             )
                             .append( avListHeader = $('<div></div>').addClass('header-text') )
 
@@ -114,7 +90,6 @@
             ;
 
             this._buttons = {
-                'search': btnSearch,
                 'selectAll': btnSelectAll,
                 'deselectAll': btnDeselectAll
             };
@@ -127,12 +102,51 @@
                 'available': avListContent.attr('id', this.scope+'_avListContent')
             };
 
+            this._initSearchable();
+
             this._optionCache = new OptionCache(this);
             this._searchDelayed = new SearchDelayed(this, {delay: 500});
 
             this._applyListDroppable();
 
             this.refresh();
+        },
+
+        _initSearchable: function() {
+            var isToggle = ('toggle' === this.options.searchField);
+            if (isToggle) {
+                var that = this;
+                this._buttons['search'] = $('<button></button').addClass('uix-control-right')
+                    .attr('data-localekey', 'search')
+                    .attr('title', this._t('search'))
+                    .button({icons:{primary:'ui-icon-search'}, text:false})
+                    .click(function(e) {
+                        e.preventDefault(); e.stopPropagation();
+                        if (that._searchField.is(':visible')) {
+                            var b = $(this);
+                            that._headers['available'].css('visibility', 'visible').fadeTo('fast', 1.0);
+                            that._searchField.hide('slide', {direction: 'right'}, 200, function() { b.removeClass('ui-corner-right ui-state-active').addClass('ui-corner-all'); });
+                            that._searchDelayed.cancelLastRequest();
+                            that._optionCache.filter('');
+                        } else {
+                            that._headers['available'].fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
+                            $(this).removeClass('ui-corner-all').addClass('ui-corner-right ui-state-active');
+                            that._searchField.show('slide', {direction: 'right'}, 200, function() { $(this).focus(); });
+                            that._search();
+                        }
+                        return false;
+                    })
+                    .insertBefore( this._headers['available'] );
+            }
+            if (this.options.searchField) {
+                if (!isToggle) {
+                    this._headers['available'].hide();
+                }
+                this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-' + (isToggle ? 'left' : 'all'))[isToggle ? 'hide' : 'show']()
+                    .focus(function() { $(this).select(); })
+                    .keyup(function() { that._searchDelayed.request(); })
+                    .insertBefore( this._headers['available'] );
+            }
         },
 
         /**
@@ -179,7 +193,7 @@
 
                 this._optionCache.reIndex();
 
-                if (this._searchField.is(':visible')) {
+                if (this._searchField && this._searchField.is(':visible')) {
                     this._search(null, true);
                 }
 
@@ -321,13 +335,15 @@
         _resize: function() {
             var separatorWidth = this.element.outerWidth() * this.options.splitRatio;
 
-            this._elementWrapper.find('.multiselect-selected-list').width(separatorWidth);
-            this._elementWrapper.find('.multiselect-available-list').css('margin-left', separatorWidth);
+            this._elementWrapper.find('.multiselect-' + (this.options.rtl ? 'available' : 'selected') + '-list').width(separatorWidth).css('float','left');
+            this._elementWrapper.find('.multiselect-' + (this.options.rtl ? 'selected' : 'available') + '-list').css('margin-left', separatorWidth);
 
-            this._searchField.width( this._headers['available'].parent().width() - 48 );
+            if (this._searchField) {
+                this._searchField.width( this._headers['available'].parent().width() - ('toggle' === this.options.searchField ? 48 : 24) );
+                this._headers['available'].parent().height(this._headers['selected'].parent().height() + 1);
+            }
             this._lists['selected'].height(this.element.height() - this._headers['selected'].parent().height());
             this._lists['available'].height(this.element.height() - this._headers['available'].parent().height());
-
         },
 
         /**
