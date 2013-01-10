@@ -906,7 +906,7 @@
             });
             for (var i=0, eData; i<this._elements.length; i++) {
                 eData = this._elements[i];
-                if (!$.contains(p, eData.optionElement[0]) || (_groupsRemoved.indexOf(eData.optionGroup) > -1)) {
+                if (eData.optionGroup != "" && (!$.contains(p, eData.optionElement[0]) || (_groupsRemoved.indexOf(eData.optionGroup) > -1))) {
                     this._elements.splice(i--, 1)[0].listElement.remove();
                 }
             }
