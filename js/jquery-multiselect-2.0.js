@@ -53,7 +53,7 @@
             this.optionGroupIndex = 1;
             this._setLocale(this.options.locale);
 
-            this.element.hide();
+            this.element.addClass('uix-multiselect-original');
             this._elementWrapper = $('<div></div>').addClass('uix-multiselect ui-widget')
                 .css({
                     'width': this.element.outerWidth(),
@@ -61,7 +61,7 @@
                 })
                 .append(
                     $('<div></div>').addClass('multiselect-selected-list')
-                        .append( $('<div></div>').addClass('ui-widget-header ui-corner-tl')
+                        .append( $('<div></div>').addClass('ui-widget-header ui-corner-t' + (this.options.rtl?'r':'l'))
                             .append( btnDeselectAll = $('<button></button>').addClass('uix-control-right')
                                 .attr('data-localekey', 'deselectAll')
                                 .attr('title', this._t('deselectAll'))
@@ -74,7 +74,7 @@
                 )
                 [this.options.rtl?'prepend':'append'](
                     $('<div></div>').addClass('multiselect-available-list')
-                        .append( $('<div></div>').addClass('ui-widget-header ui-corner-tr')
+                        .append( $('<div></div>').addClass('ui-widget-header ui-corner-t' + (this.options.rtl?'l':'r'))
                             .append( btnSelectAll = $('<button></button>').addClass('uix-control-right')
                                 .attr('data-localekey', 'selectAll')
                                 .attr('title', this._t('selectAll'))
@@ -109,6 +109,7 @@
 
             this._applyListDroppable();
 
+            this._resize();  // just make sure we display the widget right without delay
             this.refresh();
         },
 
@@ -333,17 +334,21 @@
 
         // call this method whenever the widget resizes
         _resize: function() {
-            var separatorWidth = this.element.outerWidth() * this.options.splitRatio;
+            var leftWidth = this.element.outerWidth() * this.options.splitRatio;
+            var rightWidth = this.element.outerWidth() - leftWidth;
 
-            this._elementWrapper.find('.multiselect-' + (this.options.rtl ? 'available' : 'selected') + '-list').width(separatorWidth).css('float','left');
-            this._elementWrapper.find('.multiselect-' + (this.options.rtl ? 'selected' : 'available') + '-list').css('margin-left', separatorWidth);
+            this._elementWrapper.find('.multiselect-' + (this.options.rtl ? 'available' : 'selected') + '-list').width(leftWidth).css('left', 0);
+            this._elementWrapper.find('.multiselect-' + (this.options.rtl ? 'selected' : 'available') + '-list').width(rightWidth).css('left', leftWidth);
 
             if (this._searchField) {
-                this._searchField.width( this._headers['available'].parent().width() - ('toggle' === this.options.searchField ? 48 : 24) );
-                this._headers['available'].parent().height(this._headers['selected'].parent().height() + 1);
+                var isToggle = ('toggle' === this.options.searchField);
+                this._searchField.width( this._headers['available'].parent().width() - (isToggle ? 48 : 24) );
+                if (!isToggle) {
+                    this._headers['available'].parent().height(this._headers['selected'].parent().height() + 1);
+                }
             }
-            this._lists['selected'].height(this.element.height() - this._headers['selected'].parent().height());
-            this._lists['available'].height(this.element.height() - this._headers['available'].parent().height());
+            this._lists['selected'].height(this.element.height() - this._headers['selected'].parent().height() - 5);
+            this._lists['available'].height(this.element.height() - this._headers['available'].parent().height() - 5);
         },
 
         /**
@@ -378,7 +383,7 @@
             delete this._lists;
             delete this._elementWrapper;
 
-            this.element.show();
+            this.element.removeClass('uix-multiselect-original');
         }
     });
 
