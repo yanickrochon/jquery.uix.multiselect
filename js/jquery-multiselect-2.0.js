@@ -290,6 +290,30 @@
 
             initDroppable(this._lists['selected'], true);
             initDroppable(this._lists['available'], false);
+
+            if (this.options.sortable) {
+                var that = this;
+                this._lists['selected'].sortable({
+                     appendTo: 'parent',
+                     axis: "y",
+                     containment: $('.multiselect-selected-list', this._elementWrapper), //"parent",
+                     items: '.multiselect-element-wrapper',
+                     handle: '.group-element',
+                     revert: true,
+                     stop: $.proxy(function(evt, ui) {
+                         var prevGroup;
+                         $('.multiselect-element-wrapper', that._lists['selected']).each(function() {
+                             var currGroup = that._optionCache._groups.get($(this).data('option-group'));
+                             if (!prevGroup) {
+                                 that.element.append(currGroup.groupElement);
+                             } else {
+                                 currGroup.groupElement.insertAfter(prevGroup.groupElement);
+                             }
+                             prevGroup = currGroup;
+                         });
+                     }, this)
+                 });
+            }
         },
 
         _updateControls: function() {
@@ -885,7 +909,7 @@
             });
             for (var i=0, eData; i<this._elements.length; i++) {
                 eData = this._elements[i];
-                if (!$.contains(p, eData.optionElement[0]) || (_groupsRemoved.indexOf(eData.optionGroup) > -1)) {
+                if (!$.contains(p, eData.optionElement[0]) || ($.inArray(eData.optionGroup, _groupsRemoved) > -1)) {
                     this._elements.splice(i--, 1)[0].listElement.remove();
                 }
             }
