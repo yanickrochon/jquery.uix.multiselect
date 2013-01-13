@@ -60,9 +60,9 @@
                     $('#btnToggleOriginal_'+k).click(function() {
                         var _m = $('#multiselect_'+k);
                         if (_m.is(':visible')) {
-                            _m.next().toggle().end().toggle().multiselect('refresh');
+                            _m.next().toggle().end().toggleClass('uix-multiselect-original').multiselect('refresh');
                         } else {
-                            _m.toggle().next().toggle();
+                            _m.toggleClass('uix-multiselect-original').next().toggle();
                         }
                         return false;
                     });

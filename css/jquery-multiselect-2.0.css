@@ -1,8 +1,8 @@
 
 
-.uix-multiselect { float:left; }
-.uix-multiselect .multiselect-selected-list, .uix-multiselect .multiselect-available-list { position:relative; overflow:hidden; }
-.uix-multiselect .multiselect-selected-list { float:left; }
+.uix-multiselect-original { position: absolute; left:-999999px; }
+.uix-multiselect { position: relative; float:left; }
+.uix-multiselect .multiselect-selected-list, .uix-multiselect .multiselect-available-list { position:absolute; overflow:hidden; }
 .uix-multiselect .ui-widget-header { overflow:hidden;  white-space:nowrap; padding:2px 4px; }
 .uix-multiselect .ui-widget-header div.header-text { white-space: nowrap; }
 .uix-multiselect .ui-widget-header .uix-control-right, .uix-multiselect .ui-widget-header .uix-control-left { width:16px; height:16px; }
