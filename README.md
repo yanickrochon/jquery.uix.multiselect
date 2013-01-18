@@ -64,4 +64,4 @@ Limitations
 
 * When setting `sortable` option to `true`, options can only be reordered within their own groups. That is, an option cannot be
   reordered between two options of a different group. As this widget's purpose is not to extend the original element's behaviour
-  beyound user interaction and persentation, this limitation shall not be lifted for the time being.
+  beyound user interaction and presentation, this limitation shall not be lifted for the time being.
