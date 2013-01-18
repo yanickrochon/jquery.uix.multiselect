@@ -26,6 +26,7 @@
     // The jQuery.uix namespace will automatically be created if it doesn't exist
     $.widget("uix.multiselect", {
         options: {
+            availableListPosition: 'right',// 'top', 'right', 'bottom', 'left'; the position of the available list (default: 'right')
             collapsableGroups: true,       // tells whether the option groups can be collapsed or not (default: true)
             defaultGroupName: '',          // the name of the default option group (default: '')
             filterSelected: false,         // when searching, filter selected options also? (default: false)
@@ -34,8 +35,8 @@
             moveEffectOptions: {},         // effect options (see jQuery UI documentation) (default: {})
             moveEffectSpeed: null,         // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
             optionRenderer: false,         // a function that will return the item element to be rendered in the list (default: false)
-            rtl: false,                    // if set to true, put selected list to the right hand side of the widget (default: false)
             searchField: 'toggle',         // false, true, 'toggle'; set the search field behaviour (default: 'toggle')
+            searchHeader: 'available',     // 'available', 'selected'; set the list header that will host the search field (default: 'available')
             selectionMode: 'click,d&d',    // how options can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'dblclick,d&d')
             showDefaultGroupHeader: false, // show the default option group header (default: false)
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
@@ -61,7 +62,7 @@
                 })
                 .append(
                     $('<div></div>').addClass('multiselect-selected-list')
-                        .append( $('<div></div>').addClass('ui-widget-header ui-corner-t' + (this.options.rtl?'r':'l'))
+                        .append( $('<div></div>').addClass('ui-widget-header')
                             .append( btnDeselectAll = $('<button></button>').addClass('uix-control-right')
                                 .attr('data-localekey', 'deselectAll')
                                 .attr('title', this._t('deselectAll'))
@@ -70,11 +71,11 @@
                             )
                             .append( selListHeader = $('<div></div>').addClass('header-text') )
                         )
-                        .append( selListContent = $('<div></div>').addClass('uix-list-container ui-widget-content ui-corner-bl') )
+                        .append( selListContent = $('<div></div>').addClass('uix-list-container ui-widget-content') )
                 )
-                [this.options.rtl?'prepend':'append'](
+                ['right,top'.indexOf(this.options.availableListPosition)>=0?'prepend':'append'](
                     $('<div></div>').addClass('multiselect-available-list')
-                        .append( $('<div></div>').addClass('ui-widget-header ui-corner-t' + (this.options.rtl?'l':'r'))
+                        .append( $('<div></div>').addClass('ui-widget-header')
                             .append( btnSelectAll = $('<button></button>').addClass('uix-control-right')
                                 .attr('data-localekey', 'selectAll')
                                 .attr('title', this._t('selectAll'))
@@ -84,7 +85,7 @@
                             .append( avListHeader = $('<div></div>').addClass('header-text') )
 
                         )
-                        .append( avListContent  = $('<div></div>').addClass('uix-list-container ui-widget-content ui-corner-br') )
+                        .append( avListContent  = $('<div></div>').addClass('uix-list-container ui-widget-content') )
                 )
                 .insertAfter(this.element)
             ;
@@ -109,45 +110,7 @@
 
             this._applyListDroppable();
 
-            this._resize();  // just make sure we display the widget right without delay
             this.refresh();
-        },
-
-        _initSearchable: function() {
-            var isToggle = ('toggle' === this.options.searchField);
-            if (isToggle) {
-                var that = this;
-                this._buttons['search'] = $('<button></button').addClass('uix-control-right')
-                    .attr('data-localekey', 'search')
-                    .attr('title', this._t('search'))
-                    .button({icons:{primary:'ui-icon-search'}, text:false})
-                    .click(function(e) {
-                        e.preventDefault(); e.stopPropagation();
-                        if (that._searchField.is(':visible')) {
-                            var b = $(this);
-                            that._headers['available'].css('visibility', 'visible').fadeTo('fast', 1.0);
-                            that._searchField.hide('slide', {direction: 'right'}, 200, function() { b.removeClass('ui-corner-right ui-state-active').addClass('ui-corner-all'); });
-                            that._searchDelayed.cancelLastRequest();
-                            that._optionCache.filter('');
-                        } else {
-                            that._headers['available'].fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
-                            $(this).removeClass('ui-corner-all').addClass('ui-corner-right ui-state-active');
-                            that._searchField.show('slide', {direction: 'right'}, 200, function() { $(this).focus(); });
-                            that._search();
-                        }
-                        return false;
-                    })
-                    .insertBefore( this._headers['available'] );
-            }
-            if (this.options.searchField) {
-                if (!isToggle) {
-                    this._headers['available'].hide();
-                }
-                this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-' + (isToggle ? 'left' : 'all'))[isToggle ? 'hide' : 'show']()
-                    .focus(function() { $(this).select(); })
-                    .keyup(function() { that._searchDelayed.request(); })
-                    .insertBefore( this._headers['available'] );
-            }
         },
 
         /**
@@ -165,8 +128,8 @@
          * @param callback   function    a callback function called when the refresh is complete
          */
         refresh: function(callback) {
+            this._resize();  // just make sure we display the widget right without delay
             AsyncFunction(function() {
-                this._resize();
                 this._optionCache.cleanup();
 
                 var opt, options = this.element[0].childNodes;
@@ -239,42 +202,64 @@
             }
         },
 
+        destroy: function() {
+            this._super();
+
+            this._optionCache.clear();
+            this._lists['selected'].remove();
+            this._lists['available'].remove();
+            this._elementWrapper.remove();
+
+            delete this._optionCache;
+            delete this._lists;
+            delete this._elementWrapper;
+
+            this.element.removeClass('uix-multiselect-original');
+        },
+
         /**
          * ***************************************
          *   PRIVATE
          * ***************************************
          */
 
-        _t: function(key, plural, data) {
-            return _({locale:this.options.locale, key:key, plural:plural, data:data});
-        },
+        _initSearchable: function() {
+            var isToggle = ('toggle' === this.options.searchField);
+            var searchHeader = this.options.searchHeader;
 
-        _search: function(text, silent) {
-            if (this._searchField.is(':visible')) {
-                if (text) {
-                    this._searchField.val(text);
-                } else {
-                    text = this._searchField.val();
+            if (isToggle) {
+                var that = this;
+                this._buttons['search'] = $('<button></button').addClass('uix-control-right')
+                    .attr('data-localekey', 'search')
+                    .attr('title', this._t('search'))
+                    .button({icons:{primary:'ui-icon-search'}, text:false})
+                    .click(function(e) {
+                        e.preventDefault(); e.stopPropagation();
+                        if (that._searchField.is(':visible')) {
+                            var b = $(this);
+                            that._headers[searchHeader].css('visibility', 'visible').fadeTo('fast', 1.0);
+                            that._searchField.hide('slide', {direction: 'right'}, 200, function() { b.removeClass('ui-corner-right ui-state-active').addClass('ui-corner-all'); });
+                            that._searchDelayed.cancelLastRequest();
+                            that._optionCache.filter('');
+                        } else {
+                            that._headers[searchHeader].fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
+                            $(this).removeClass('ui-corner-all').addClass('ui-corner-right ui-state-active');
+                            that._searchField.show('slide', {direction: 'right'}, 200, function() { $(this).focus(); });
+                            that._search();
+                        }
+                        return false;
+                    })
+                    .insertBefore( this._headers[searchHeader] );
+            }
+            if (this.options.searchField) {
+                if (!isToggle) {
+                    this._headers[searchHeader].hide();
                 }
-            } else {
-                text = (""+text);
+                this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-' + (isToggle ? 'left' : 'all'))[isToggle ? 'hide' : 'show']()
+                    .focus(function() { $(this).select(); })
+                    .keyup(function() { that._searchDelayed.request(); })
+                    .insertBefore( this._headers[searchHeader] );
             }
-
-            this._optionCache.filter(text, silent);
-        },
-
-        _setLocale: function(locale) {
-            if (locale == 'auto') {
-                locale = navigator.userLanguage ||
-                         navigator.language ||
-                         navigator.browserLanguage ||
-                         navigator.systemLanguage ||
-                         '';
-            }
-            if (!$.uix.multiselect.i18n[locale]) {
-                locale = '';   // revert to default is not supported auto locale
-            }
-            this.options.locale = locale;
         },
 
         _applyListDroppable: function() {
@@ -307,6 +292,38 @@
             initDroppable(this._lists['available'], false);
         },
 
+        _search: function(text, silent) {
+            if (this._searchField.is(':visible')) {
+                if (text) {
+                    this._searchField.val(text);
+                } else {
+                    text = this._searchField.val();
+                }
+            } else {
+                text = (""+text);
+            }
+
+            this._optionCache.filter(text, silent);
+        },
+
+        _setLocale: function(locale) {
+            if (locale == 'auto') {
+                locale = navigator.userLanguage ||
+                         navigator.language ||
+                         navigator.browserLanguage ||
+                         navigator.systemLanguage ||
+                         '';
+            }
+            if (!$.uix.multiselect.i18n[locale]) {
+                locale = '';   // revert to default is not supported auto locale
+            }
+            this.options.locale = locale;
+        },
+
+        _t: function(key, plural, data) {
+            return _({locale:this.options.locale, key:key, plural:plural, data:data});
+        },
+
         _updateControls: function() {
             var that = this;
             $('.uix-control-left,.uix-control-right', this._elementWrapper).each(function() {
@@ -334,21 +351,53 @@
 
         // call this method whenever the widget resizes
         _resize: function() {
-            var leftWidth = this.element.outerWidth() * this.options.splitRatio;
-            var rightWidth = this.element.outerWidth() - leftWidth;
+            var pos = this.options.availableListPosition.toLowerCase();         // shortcut
+            var sSize = ('left,right'.indexOf(pos) >= 0) ? 'Width' : 'Height';  // split size fn
+            var tSize = ('left,right'.indexOf(pos) >= 0) ? 'Height' : 'Width';  // total size fn
+            var cSl = this.element['outer'+sSize]() * this.options.splitRatio;  // list container size selected
+            var cAv = this.element['outer'+sSize]() - cSl;                      // ... available
+            var hSl = (tSize === 'Width') ? cSl : this.element.outerHeight();   // scrollable area size selected
+            var hAv = (tSize === 'Width') ? cAv : this.element.outerHeight();   // ... available
+            var styleRule = ('left,right'.indexOf(pos) >= 0) ? 'left' : 'top';  // CSS rule for offsetting
+            var transferDir = ['n','e','s','w'];                                // button icon direction
+            var orientationDir = ['bottom','left','top','right'];               // list of matching directions with icons
+            var swap = ('left,top'.indexOf(pos) >= 0);                          // true if we swap left-right or top-bottom
+            var isToggle = ('toggle' === this.options.searchField);             // true if search field is toggle-able
+            var heaerBordersBoth = 'ui-corner-tl ui-corner-tr ui-corner-bl ui-corner-br ui-corner-top';
+            var hSlCls = (tSize === 'Width') ? (swap ? '' : 'ui-corner-top') : (swap ? 'ui-corner-tr' : 'ui-corner-tl');
+            var hAvCls = (tSize === 'Width') ? (swap ? 'ui-corner-top' : '') : (swap ? 'ui-corner-tl' : 'ui-corner-tr');
 
-            this._elementWrapper.find('.multiselect-' + (this.options.rtl ? 'available' : 'selected') + '-list').width(leftWidth).css('left', 0);
-            this._elementWrapper.find('.multiselect-' + (this.options.rtl ? 'selected' : 'available') + '-list').width(rightWidth).css('left', leftWidth);
+            // calculate outer lists dimensions
+            this._elementWrapper.find('.multiselect-available-list')
+                [sSize.toLowerCase()](cAv).css(styleRule, swap ? 0 : cSl)
+                [tSize.toLowerCase()](this.element['outer'+tSize]())
+            ;
+            this._elementWrapper.find('.multiselect-selected-list')
+                [sSize.toLowerCase()](cSl).css(styleRule, swap ? cAv : 0)
+                [tSize.toLowerCase()](this.element['outer'+tSize]())
+            ;
 
-            if (this._searchField) {
-                var isToggle = ('toggle' === this.options.searchField);
-                this._searchField.width( this._headers['available'].parent().width() - (isToggle ? 48 : 24) );
-                if (!isToggle) {
-                    this._headers['available'].parent().height(this._headers['selected'].parent().height() + 1);
-                }
+            // selection all button
+            this._buttons['selectAll'].button('option', 'icons', {primary:'ui-icon-arrowthickstop-1-'+transferDir[$.inArray(pos,orientationDir)%4]});
+            this._buttons['deselectAll'].button('option', 'icons', {primary:'ui-icon-arrowthickstop-1-'+transferDir[($.inArray(pos,orientationDir)+2)%4]});
+            // header borders
+            this._headers['available'].parent().removeClass(heaerBordersBoth).addClass(hAvCls);
+            this._headers['selected'].parent().removeClass(heaerBordersBoth).addClass(hSlCls);
+
+            // make both headers equal!
+            if (!isToggle) {
+                var h = Math.max(this._headers['selected'].parent().height(), this._headers['available'].parent().height()) + 1;
+                this._headers['available'].parent().height(h);
+                this._headers['selected'].parent().height(h);
             }
-            this._lists['selected'].height(this.element.height() - this._headers['selected'].parent().height() - 5);
-            this._lists['available'].height(this.element.height() - this._headers['available'].parent().height() - 5);
+            // adjust search field width
+            if (this._searchField) {
+                this._searchField.width( this._headers['available'].parent().width() - (isToggle ? 48 : 24) );
+            }
+
+            // calculate inner lists height
+            this._lists['available'].height(hAv - this._headers['available'].parent().outerHeight() - 2);
+            this._lists['selected'].height(hSl - this._headers['selected'].parent().outerHeight() - 2);
         },
 
         /**
@@ -367,24 +416,11 @@
         _setOption: function(key, value) {
             // Use the _setOption method to respond to changes to options
             switch(key) {
+                // TODO
             }
-            $.Widget.prototype._setOption.apply(this,arguments)
-        },
-        destroy: function() {
-            // Use the destroy method to reverse everything your plugin has applied
-            $.Widget.prototype.destroy.call(this);
-
-            this._optionCache.clear();
-            this._lists['selected'].remove();
-            this._lists['available'].remove();
-            this._elementWrapper.remove();
-
-            delete this._optionCache;
-            delete this._lists;
-            delete this._elementWrapper;
-
-            this.element.removeClass('uix-multiselect-original');
+            this._superApply(arguments);
         }
+
     });
 
 
