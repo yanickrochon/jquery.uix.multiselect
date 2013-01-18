@@ -17,16 +17,16 @@
 (function($) {
 
     $.uix.multiselect.i18n['fr'] = {
-        itemsSelected: '{count} option sélectionné',            // 0, 1
-        itemsSelected_plural: '{count} options sélectionnés',   // n
+        itemsSelected: '{count} option sélectionnée',           // 0, 1
+        itemsSelected_plural: '{count} options sélectionnées',  // n
         //itemsSelected_plural_two: ...                         // 2
         //itemsSelected_plural_few: ...                         // 3, 4
         itemsAvailable: '{count} option disponible',
         itemsAvailable_plural: '{count} options disponibles',
         //itemsAvailable_plural_two: ...
         //itemsAvailable_plural_few: ...
-        itemsFiltered: '{count} option masqué',
-        itemsFiltered_plural: '{count} options masqués',
+        itemsFiltered: '{count} option masquée',
+        itemsFiltered_plural: '{count} options masquées',
         //itemsFiltered_plural_two: ...
         //itemsFiltered_plural_few: ...
         selectAll: 'Sélectionner tout',
