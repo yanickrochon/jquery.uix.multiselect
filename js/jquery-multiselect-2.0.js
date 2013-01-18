@@ -103,10 +103,10 @@
                 'available': avListContent.attr('id', this.scope+'_avListContent')
             };
 
-            this._initSearchable();
-
             this._optionCache = new OptionCache(this);
             this._searchDelayed = new SearchDelayed(this, {delay: 500});
+
+            this._initSearchable();
 
             this._applyListDroppable();
 
@@ -256,9 +256,9 @@
                     this._headers[searchHeader].hide();
                 }
                 this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-' + (isToggle ? 'left' : 'all'))[isToggle ? 'hide' : 'show']()
+                    .insertBefore( this._headers[searchHeader] )
                     .focus(function() { $(this).select(); })
-                    .keyup(function() { that._searchDelayed.request(); })
-                    .insertBefore( this._headers[searchHeader] );
+                    .keyup($.proxy(this._searchDelayed.request, this._searchDelayed));
             }
         },
 
@@ -410,7 +410,7 @@
 
             // make both headers equal!
             if (!isToggle) {
-                var h = Math.max(this._headers['selected'].parent().height(), this._headers['available'].parent().height()) + 1;
+                var h = Math.max(this._headers['selected'].parent().height(), this._headers['available'].parent().height());
                 this._headers['available'].parent().height(h);
                 this._headers['selected'].parent().height(h);
             }
