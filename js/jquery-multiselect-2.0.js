@@ -394,12 +394,10 @@
             // calculate outer lists dimensions
             this._elementWrapper.find('.multiselect-available-list')
                 [sSize.toLowerCase()](cAv).css(styleRule, swap ? 0 : cSl)
-                [tSize.toLowerCase()](this.element['outer'+tSize]())
-            ;
+                [tSize.toLowerCase()](this.element['outer'+tSize]() + 1);  // account for borders
             this._elementWrapper.find('.multiselect-selected-list')
                 [sSize.toLowerCase()](cSl).css(styleRule, swap ? cAv : 0)
-                [tSize.toLowerCase()](this.element['outer'+tSize]())
-            ;
+                [tSize.toLowerCase()](this.element['outer'+tSize]() + 1); // account for borders
 
             // selection all button
             this._buttons['selectAll'].button('option', 'icons', {primary:'ui-icon-arrowthickstop-1-'+transferDir[$.inArray(pos,orientationDir)%4]});
@@ -420,8 +418,8 @@
             }
 
             // calculate inner lists height
-            this._lists['available'].height(hAv - this._headers['available'].parent().outerHeight() - 2);
-            this._lists['selected'].height(hSl - this._headers['selected'].parent().outerHeight() - 2);
+            this._lists['available'].height(hAv - this._headers['available'].parent().outerHeight() - 2);  // account for borders
+            this._lists['selected'].height(hSl - this._headers['selected'].parent().outerHeight() - 2);    // account for borders
         },
 
         /**
@@ -757,20 +755,21 @@
                         e.listElement.removeClass('ui-state-active');
                     },
                     stop: function(evt, ui) {
+                        var e;
                         if (_received_index) {
-                            var e = that._elements[_received_index];
+                            e = that._elements[_received_index];
                             ui.item.replaceWith(e.listElement.addClass('ui-state-highlight').draggable('disable').removeClass('ui-state-disabled'));
-                            that._reorderSelected(e.optionGroup);
                             that._widget._updateHeaders();
                             _received_index = undefined;
                         } else {
-                            var e = that._elements[ui.item.data('element-index')];
+                            e = that._elements[ui.item.data('element-index')];
                             if (e && !e.selected) {
                                 that._bufferedMode(true);
                                 that._appendToList(e);
                                 that._bufferedMode(false);
                             }
                         }
+                        if (e) that._reorderSelected(e.optionGroup);
                     },
                     revert: true
                 });
