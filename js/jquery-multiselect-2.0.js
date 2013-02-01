@@ -205,12 +205,13 @@
         destroy: function() {
             this._super();
 
-            this._optionCache.clear();
-            this._lists['selected'].remove();
-            this._lists['available'].remove();
-            this._elementWrapper.remove();
+            this._optionCache.reset(true);
+            this._lists['selected'].empty().remove();
+            this._lists['available'].empty().remove();
+            this._elementWrapper.empty().remove();
 
             delete this._optionCache;
+            delete this._searchDelayed;
             delete this._lists;
             delete this._elementWrapper;
 
@@ -555,6 +556,11 @@
 
         // public methods
 
+        this.setComparator = function(comp) {
+            comparator = comp;
+            return this;
+        };
+
         this.clear = function() {
             keys = [];
             items = {};
@@ -636,7 +642,7 @@
         this._selectionMode = this._widget.options.selectionMode.indexOf('dblclick') > -1 ? 'dblclick'
                             : this._widget.options.selectionMode.indexOf('click') > -1 ? 'click' : false;
 
-        this.clear();
+        this.reset();
     };
 
     OptionCache.Options = {
@@ -803,9 +809,7 @@
                         if (optElement.prop('selected')) $(this).addClass('ui-state-highlight');
                     }
                 );
-            if (optElement.attr('disabled')) {
-                e.addClass('ui-state-disabled');
-            } else if (this._widget.options.selectionMode.indexOf('d&d') > -1) {
+            if (!optElement.prop('disabled') && this._widget.options.selectionMode.indexOf('d&d') > -1) {
                 var that = this;
                 e.draggable({
                     addClasses: false,
@@ -944,14 +948,23 @@
 
         },
 
-
-        clear: function() {
-            this._elements = [];
-            this._groups.clear(this.getComparator());
+        reset: function(destroy) {
+            this._groups.clear();
             this._listContainers['selected'].empty();
             this._listContainers['available'].empty();
 
-            this.prepareGroup();  // reset default group
+            if (destroy) {
+                $.each(this._elements, function(i, e) {
+                   e.optionElement.removeData('element-index');
+                });
+                delete this._elements;
+                delete this._groups;
+                delete this._listContainers;
+            } else {
+                this._elements = [];
+                this.prepareGroup();  // reset default group
+                this._groups.setComparator(this.getComparator());
+            }
         },
 
         // should call _reIndex after this
@@ -1013,9 +1026,10 @@
         // prepare option element to be rendered (must call reIndex after this!)
         // If optGroup is defined, prepareGroup(optGroup) should have been called already
         prepareOption: function(optElement, optGroup) {
+            var e;
             if (optElement.data('element-index') === undefined) {
                 optGroup = optGroup || DEF_OPTGROUP;
-                this._elements.push({
+                this._elements.push(e = {
                     index: -1,
                     selected: false,
                     filtered: false,
@@ -1023,7 +1037,10 @@
                     optionElement: optElement,
                     optionGroup: optGroup
                 });
+            } else {
+                e = this._elements[optElement.data('element-index')];
             }
+            e.listElement[(optElement.prop('disabled') ? "add" : "remove") + "Class"]('ui-state-disabled');
         },
 
         reIndex: function() {
@@ -1043,6 +1060,10 @@
             }
 
             this._bufferedMode(true);
+
+            //cleanup
+            this._listContainers['available'].find(".multiselect-element-wrapper").detach();
+            this._listContainers['selected'].find(".multiselect-element-wrapper").detach();
 
             this._groups.each(function(g, v, l, showDefGroupName) {
                 if (!(v.groupElement && v.groupElement.data('option-group'))) {
