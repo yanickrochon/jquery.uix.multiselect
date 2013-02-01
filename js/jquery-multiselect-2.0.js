@@ -67,7 +67,7 @@
                                 .attr('data-localekey', 'deselectAll')
                                 .attr('title', this._t('deselectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-e'}, text:false})
-                                .click(function(e) { e.preventDefault(); e.stopPropagation(); that._optionCache.setSelectedAll(false); return false; })
+                                .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(false); return false; })
                             )
                             .append( selListHeader = $('<div></div>').addClass('header-text') )
                         )
@@ -80,7 +80,7 @@
                                 .attr('data-localekey', 'selectAll')
                                 .attr('title', this._t('selectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false})
-                                .click(function(e) { e.preventDefault(); e.stopPropagation(); that._optionCache.setSelectedAll(true); return false; })
+                                .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(true); return false; })
                             )
                             .append( avListHeader = $('<div></div>').addClass('header-text') )
 
@@ -103,7 +103,7 @@
                 'available': avListContent.attr('id', this.scope+'_avListContent')
             };
 
-            this._optionCache = new OptionCache(this);
+            this.optionCache = new OptionCache(this);
             this._searchDelayed = new SearchDelayed(this, {delay: 500});
 
             this._initSearchable();
@@ -130,7 +130,7 @@
         refresh: function(callback) {
             this._resize();  // just make sure we display the widget right without delay
             AsyncFunction(function() {
-                this._optionCache.cleanup();
+                this.optionCache.cleanup();
 
                 var opt, options = this.element[0].childNodes;
 
@@ -141,21 +141,21 @@
                             var optGroup = $(opt).data('option-group') || (PRE_OPTGROUP + (this.optionGroupIndex++));
                             var grpOptions = opt.childNodes;
 
-                            this._optionCache.prepareGroup($(opt), optGroup);
+                            this.optionCache.prepareGroup($(opt), optGroup);
 
                             for (var j=0, l2=grpOptions.length; j<l2; j++) {
                                 opt = grpOptions[j];
                                 if (opt.nodeType == 1) {
-                                    this._optionCache.prepareOption($(opt), optGroup);
+                                    this.optionCache.prepareOption($(opt), optGroup);
                                 }
                             }
                         } else {
-                            this._optionCache.prepareOption($(opt));  // add to default group
+                            this.optionCache.prepareOption($(opt));  // add to default group
                         }
                     }
                 }
 
-                this._optionCache.reIndex();
+                this.optionCache.reIndex();
 
                 if (this._searchField && this._searchField.is(':visible')) {
                     this._search(null, true);
@@ -205,12 +205,12 @@
         destroy: function() {
             this._super();
 
-            this._optionCache.reset(true);
+            this.optionCache.reset(true);
             this._lists['selected'].empty().remove();
             this._lists['available'].empty().remove();
             this._elementWrapper.empty().remove();
 
-            delete this._optionCache;
+            delete this.optionCache;
             delete this._searchDelayed;
             delete this._lists;
             delete this._elementWrapper;
@@ -241,7 +241,7 @@
                             that._headers[searchHeader].css('visibility', 'visible').fadeTo('fast', 1.0);
                             that._searchField.hide('slide', {direction: 'right'}, 200, function() { b.removeClass('ui-corner-right ui-state-active').addClass('ui-corner-all'); });
                             that._searchDelayed.cancelLastRequest();
-                            that._optionCache.filter('');
+                            that.optionCache.filter('');
                         } else {
                             that._headers[searchHeader].fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
                             $(this).removeClass('ui-corner-all').addClass('ui-corner-right ui-state-active');
@@ -266,7 +266,7 @@
         _applyListDroppable: function() {
             if (this.options.selectionMode.indexOf('d&d') == -1) return;
 
-            var _optionCache = this._optionCache;
+            var _optionCache = this.optionCache;
             var currentScope = this.scope;
 
             var getElementData = function(d) {
@@ -304,7 +304,7 @@
                      stop: $.proxy(function(evt, ui) {
                          var prevGroup;
                          $('.multiselect-element-wrapper', that._lists['selected']).each(function() {
-                             var currGroup = that._optionCache._groups.get($(this).data('option-group'));
+                             var currGroup = that.optionCache._groups.get($(this).data('option-group'));
                              if (!prevGroup) {
                                  that.element.append(currGroup.groupElement);
                              } else {
@@ -328,7 +328,7 @@
                 text = (""+text);
             }
 
-            this._optionCache.filter(text, silent);
+            this.optionCache.filter(text, silent);
         },
 
         _setLocale: function(locale) {
@@ -357,7 +357,7 @@
         },
 
         _updateHeaders: function() {
-            var t, info = this._optionCache.getSelectionInfo();
+            var t, info = this.optionCache.getSelectionInfo();
 
             this._headers['selected']
                 .text( t = this._t('itemsSelected', info.selected.total, {count:info.selected.total}) )
