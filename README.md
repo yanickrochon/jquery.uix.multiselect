@@ -2,6 +2,8 @@ jQuery Multiselect
 ==================
 Version 2.0 RC
 
+![Preview](http://mind2soft.com/labs/jquery/multiselect/preview.png)
+
 Introduction
 ------------
 
@@ -22,8 +24,22 @@ This widget is stable enough to be used in staging environments. However it is *
 Requirements
 ------------
 
-* jQuery 1.7.2+
-* jQuery UI 1.8+
+* jQuery 1.8+
+* jQuery UI 1.9+
+
+Features
+--------
+
+* Support for disabled options
+* Support for option groups
+* Option group collapsable
+* Draggable drop and/or sortable enabled
+* Mouse selection mode (click, dblclick)
+* Support for predefined or custom sort functions
+* Searchable
+* List layout and select direction (horizontal or vertical)
+* Custom item renderer
+
 
 Usage
 -----
@@ -49,16 +65,11 @@ See [wiki documentation](https://github.com/yanickrochon/jquery.multiselect-2/wi
 TODO
 ----
 
-* <del>add disabled items support</del>
-* <del>(de)select all group options</del>
-* <del>add (collapsable) grouped items support</del>
-* <del>selection mode : (drag, click, dblclick, etc.)</del>
-* <del>show empty groups</del>
-* <del>sortable on selected items</del>
-* <del>add custom item rendering support</del> *(untested)*
+* <del>add custom item rendering support</del> *(needs more tests)*
 * Make all options as mutable as possible after initialization.
-* test in all browsers *(not fully tested)*
-* code cleanup
+* Test in all major browsers *(not fully tested)*
+* Mobile support
+* Code cleanup
 * etc.
 
 
@@ -68,3 +79,5 @@ Limitations
 * When setting `sortable` option to `true`, options can only be reordered within their own groups. That is, an option cannot be
   reordered between two options of a different group. As this widget's purpose is not to extend the original element's behaviour
   beyound user interaction and presentation, this limitation shall not be lifted for the time being.
+* This widget was designed for modern browsers usage. It is working fine in IE7+, Firefox and Chrome. Note that it
+  *will not work* in quirks mode. There will be little to no support for non standards compliant browsers.
