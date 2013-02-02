@@ -384,8 +384,6 @@
             var hSl = (tSize === 'Width') ? cSl : this.element.outerHeight();   // scrollable area size selected
             var hAv = (tSize === 'Width') ? cAv : this.element.outerHeight();   // ... available
             var styleRule = ('left,right'.indexOf(pos) >= 0) ? 'left' : 'top';  // CSS rule for offsetting
-            var transferDir = ['n','e','s','w'];                                // button icon direction
-            var orientationDir = ['bottom','left','top','right'];               // list of matching directions with icons
             var swap = ('left,top'.indexOf(pos) >= 0);                          // true if we swap left-right or top-bottom
             var isToggle = ('toggle' === this.options.searchField);             // true if search field is toggle-able
             var heaerBordersBoth = 'ui-corner-tl ui-corner-tr ui-corner-bl ui-corner-br ui-corner-top';
@@ -401,8 +399,9 @@
                 [tSize.toLowerCase()](this.element['outer'+tSize]() + 1); // account for borders
 
             // selection all button
-            this._buttons['selectAll'].button('option', 'icons', {primary:'ui-icon-arrowthickstop-1-'+transferDir[$.inArray(pos,orientationDir)%4]});
-            this._buttons['deselectAll'].button('option', 'icons', {primary:'ui-icon-arrowthickstop-1-'+transferDir[($.inArray(pos,orientationDir)+2)%4]});
+            this._buttons['selectAll'].button('option', 'icons', {primary: transferIcon(this.options, 'ui-icon-arrowthickstop-1-', swap) });
+            this._buttons['deselectAll'].button('option', 'icons', {primary: transferIcon(this.options, 'ui-icon-arrowthickstop-1-', !swap) });
+
             // header borders
             this._headers['available'].parent().removeClass(heaerBordersBoth).addClass(hAvCls);
             this._headers['selected'].parent().removeClass(heaerBordersBoth).addClass(hSlCls);
@@ -506,6 +505,12 @@
         }
     };
 
+
+    var transferDir = ['n','e','s','w'];                          // button icon direction
+    var transferOrientation = ['bottom','left','top','right'];    // list of matching directions with icons
+    var transferIcon = function(options, prefix, selected) {
+        return prefix + transferDir[($.inArray(options.availableListPosition.toLowerCase(), transferOrientation) + (selected ? 2 : 0)) % 4];
+    };
 
     /**
      * setTimeout on steroids!
@@ -682,7 +687,7 @@
                 .append( $('<button></button>').addClass('uix-control-right')
                     .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
                     .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
-                    .button({icons:{primary:'ui-icon-arrowstop-1-'+(selected?'e':'w')}, text:false})
+                    .button({icons:{primary:transferIcon(this._widget.options, 'ui-icon-arrowstop-1-', selected)}, text:false})
                     .click(function(e) {
                         e.preventDefault(); e.stopPropagation();
 
@@ -764,9 +769,10 @@
                         var e;
                         if (_received_index) {
                             e = that._elements[_received_index];
-                            ui.item.replaceWith(e.listElement.addClass('ui-state-highlight').draggable('disable').removeClass('ui-state-disabled'));
-                            that._widget._updateHeaders();
                             _received_index = undefined;
+                            ui.item.replaceWith(e.listElement.addClass('ui-state-highlight option-selected'));
+                            that._widget._updateHeaders();
+                            that._widget._triggerUIEvent(EVENT_CHANGE, { optionElements:[e.optionElement[0]], selected:true } );
                         } else {
                             e = that._elements[ui.item.data('element-index')];
                             if (e && !e.selected) {
@@ -809,10 +815,11 @@
                         if (optElement.prop('selected')) $(this).addClass('ui-state-highlight');
                     }
                 );
-            if (!optElement.prop('disabled') && this._widget.options.selectionMode.indexOf('d&d') > -1) {
+            if (this._widget.options.selectionMode.indexOf('d&d') > -1) {
                 var that = this;
                 e.draggable({
                     addClasses: false,
+                    cancel: (this._widget.options.sortable ? '.option-selected, ' : '') + '.ui-state-disabled',
                     appendTo: this._widget._elementWrapper,
                     scope: this._widget.scope,
                     start: function(evt, ui) {
@@ -824,12 +831,17 @@
                     },
                     helper: 'clone',
                     revert: 'invalid',
-                    zIndex: 99999
+                    zIndex: 99999,
+                    disabled: optElement.prop('disabled')
                 });
-
+                if (optElement.prop('disabled')) {
+                    e.addClass('ui-state-disabled');
+                }
                 if (this._widget.options.sortable) {
                     e.draggable('option', 'connectToSortable', this._groups.get(optGroup)['selected'].listContainer);
                 }
+            } else if (optElement.prop('disabled')) {
+                e[(optElement.prop('disabled') ? "add" : "remove") + "Class"]('ui-state-disabled');
             }
             if (optGroup) {
                 e.addClass('grouped-option').prepend($('<span></span>').addClass('ui-icon ui-icon-bullet'));
@@ -872,34 +884,23 @@
                 gDataDst.listContainer.show();
             }
 
-            if (eData.selected && this._widget.options.sortable) {
-                gDataDst.listContainer.append(eData.listElement/*.draggable('disable')*/);
+            var insertIndex = eData.index - 1;
+            while ((insertIndex >= gData.startIndex) &&
+                   (this._elements[insertIndex].selected != eData.selected)) {
+                insertIndex--;
+            }
+
+            if (insertIndex < gData.startIndex) {
+                gDataDst.listContainer.prepend(eData.listElement);
             } else {
-                var insertIndex = eData.index - 1;
-                while ((insertIndex >= gData.startIndex) &&
-                       (this._elements[insertIndex].selected != eData.selected)) {
-                    insertIndex--;
+                var prev = this._elements[insertIndex].listElement;
+                // FIX : if previous element is animated, get it's animated parent as reference
+                if (prev.parent().hasClass('ui-effects-wrapper')) {
+                    prev = prev.parent();
                 }
-
-                if (insertIndex < gData.startIndex) {
-                    gDataDst.listContainer.prepend(eData.listElement);
-                } else {
-                    var prev = this._elements[insertIndex].listElement;
-                    // FIX : if previous element is animated, get it's animated parent as reference
-                    if (prev.parent().hasClass('ui-effects-wrapper')) {
-                        prev = prev.parent();
-                    }
-                    eData.listElement.insertAfter(prev);
-                }
+                eData.listElement.insertAfter(prev);
             }
-            eData.listElement[(eData.selected?'add':'remove')+'Class']('ui-state-highlight');
-
-            if (eData.listElement.is(":ui-draggable")) {
-                eData.listElement
-                    .draggable('option', 'disabled', this._widget.options.sortable && eData.selected)
-                    .removeClass('ui-state-disabled')
-                ;
-            }
+            eData.listElement[(eData.selected?'add':'remove')+'Class']('ui-state-highlight option-selected');
 
             if ((eData.selected || !eData.filtered) && !this._isOptionCollapsed(eData) && this._moveEffect && this._moveEffect.fn) {
                 eData.listElement.hide().show(this._moveEffect.fn, this._moveEffect.options, this._moveEffect.speed);
@@ -1001,7 +1002,6 @@
         prepareGroup: function(grpElement, optGroup) {
             optGroup = optGroup || DEF_OPTGROUP;
             if (!this._groups.containsKey(optGroup)) {
-                //var groupLabel = grpElement ? grpElement.attr('label') : this._widget.options.defaultGroupName;
                 this._groups.put(optGroup, {
                     startIndex: -1,
                     count: 0,
@@ -1038,9 +1038,11 @@
                     optionGroup: optGroup
                 });
             } else {
-                e = this._elements[optElement.data('element-index')];
+                this._elements[optElement.data('element-index')]
+                    .listElement[(optElement.prop('disabled') ? "add" : "remove") + "Class"]('ui-state-disabled')
+                ;
             }
-            e.listElement[(optElement.prop('disabled') ? "add" : "remove") + "Class"]('ui-state-disabled');
+
         },
 
         reIndex: function() {
@@ -1061,12 +1063,8 @@
 
             this._bufferedMode(true);
 
-            //cleanup
-            this._listContainers['available'].find(".multiselect-element-wrapper").detach();
-            this._listContainers['selected'].find(".multiselect-element-wrapper").detach();
-
             this._groups.each(function(g, v, l, showDefGroupName) {
-                if (!(v.groupElement && v.groupElement.data('option-group'))) {
+                if (!v['available'].listContainer.parents('.multiselect-element-wrapper').length) {  // if no parent, then it was never attached yet.
                     if (v.groupElement) {
                         v.groupElement.data('option-group', g);  // for back ref
                     }
