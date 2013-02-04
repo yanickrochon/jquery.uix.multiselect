@@ -399,8 +399,8 @@
                 [tSize.toLowerCase()](this.element['outer'+tSize]() + 1); // account for borders
 
             // selection all button
-            this._buttons['selectAll'].button('option', 'icons', {primary: transferIcon(this.options, 'ui-icon-arrowthickstop-1-', swap) });
-            this._buttons['deselectAll'].button('option', 'icons', {primary: transferIcon(this.options, 'ui-icon-arrowthickstop-1-', !swap) });
+            this._buttons['selectAll'].button('option', 'icons', {primary: transferIcon(pos, 'ui-icon-arrowthickstop-1-', false) });
+            this._buttons['deselectAll'].button('option', 'icons', {primary: transferIcon(pos, 'ui-icon-arrowthickstop-1-', true) });
 
             // header borders
             this._headers['available'].parent().removeClass(heaerBordersBoth).addClass(hAvCls);
@@ -508,8 +508,8 @@
 
     var transferDir = ['n','e','s','w'];                          // button icon direction
     var transferOrientation = ['bottom','left','top','right'];    // list of matching directions with icons
-    var transferIcon = function(options, prefix, selected) {
-        return prefix + transferDir[($.inArray(options.availableListPosition.toLowerCase(), transferOrientation) + (selected ? 2 : 0)) % 4];
+    var transferIcon = function(pos, prefix, selected) {
+        return prefix + transferDir[($.inArray(pos.toLowerCase(), transferOrientation) + (selected ? 2 : 0)) % 4];
     };
 
     /**
@@ -687,7 +687,7 @@
                 .append( $('<button></button>').addClass('uix-control-right')
                     .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
                     .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
-                    .button({icons:{primary:transferIcon(this._widget.options, 'ui-icon-arrowstop-1-', selected)}, text:false})
+                    .button({icons:{primary:transferIcon(this._widget.options.availableListPosition, 'ui-icon-arrowstop-1-', selected)}, text:false})
                     .click(function(e) {
                         e.preventDefault(); e.stopPropagation();
 
