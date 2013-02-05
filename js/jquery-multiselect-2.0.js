@@ -1,5 +1,5 @@
 /*
- * jQuery UIx Multiselect 2.0beta
+ * jQuery UIx Multiselect 2.0
  *
  * Authors:
  *  Yanick Rochon (yanick.rochon[at]gmail[dot]com)
