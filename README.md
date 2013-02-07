@@ -1,3 +1,17 @@
+-----
+#Please, by advised that...
+-----
+
+> On **March 4th 2013**, this repository will change it's name for **`jquery.uix.multiselect`**
+> to follow the same naming convention as my other jQuery UIx widgets. On that date, all
+> forks will still point to this repository and will not be affected by this change, 
+> however any external references to it will have to be updated to maintain reliability.
+> It is also recommended to rename your forks as well (but you don't *have* to... if you
+> don't want to... I guess)
+
+-----
+
+
 jQuery Multiselect
 ==================
 Version 2.0 RC
