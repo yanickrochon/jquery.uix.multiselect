@@ -37,7 +37,7 @@
             optionRenderer: false,         // a function that will return the item element to be rendered in the list (default: false)
             searchField: 'toggle',         // false, true, 'toggle'; set the search field behaviour (default: 'toggle')
             searchHeader: 'available',     // 'available', 'selected'; set the list header that will host the search field (default: 'available')
-            selectionMode: 'click,d&d',    // how options can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'dblclick,d&d')
+            selectionMode: 'dblclick,d&d',    // how options can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'dblclick,d&d')
             showDefaultGroupHeader: false, // show the default option group header (default: false)
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
             splitRatio: 0.55,              // % of the left list's width of the widget total width (default 0.55)
