@@ -386,7 +386,7 @@
             var styleRule = ('left,right'.indexOf(pos) >= 0) ? 'left' : 'top';  // CSS rule for offsetting
             var swap = ('left,top'.indexOf(pos) >= 0);                          // true if we swap left-right or top-bottom
             var isToggle = ('toggle' === this.options.searchField);             // true if search field is toggle-able
-            var heaerBordersBoth = 'ui-corner-tl ui-corner-tr ui-corner-bl ui-corner-br ui-corner-top';
+            var headerBordersBoth = 'ui-corner-tl ui-corner-tr ui-corner-bl ui-corner-br ui-corner-top';
             var hSlCls = (tSize === 'Width') ? (swap ? '' : 'ui-corner-top') : (swap ? 'ui-corner-tr' : 'ui-corner-tl');
             var hAvCls = (tSize === 'Width') ? (swap ? 'ui-corner-top' : '') : (swap ? 'ui-corner-tl' : 'ui-corner-tr');
 
@@ -403,8 +403,8 @@
             this._buttons['deselectAll'].button('option', 'icons', {primary: transferIcon(pos, 'ui-icon-arrowthickstop-1-', true) });
 
             // header borders
-            this._headers['available'].parent().removeClass(heaerBordersBoth).addClass(hAvCls);
-            this._headers['selected'].parent().removeClass(heaerBordersBoth).addClass(hSlCls);
+            this._headers['available'].parent().removeClass(headerBordersBoth).addClass(hAvCls);
+            this._headers['selected'].parent().removeClass(headerBordersBoth).addClass(hSlCls);
 
             // make both headers equal!
             if (!isToggle) {
