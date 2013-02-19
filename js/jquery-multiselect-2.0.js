@@ -1235,15 +1235,13 @@
             t = i18n[p.key+'_plural_few']
         } else if (plural > 1 && i18n[p.key+'_plural']) {
             t = i18n[p.key+'_plural'];
-        } else {
+        } else if (plural == 0 && i18n[p.key+'_nil']) {
+            t = i18n[p.key+'_nil'];
+        } else {
             t = i18n[p.key] || '';
         }
 
-        for (var v in data) {
-            t = t.replace(new RegExp('{'+v+'}', 'g'), data[v]);
-        }
-
-        return t;
+        return t.replace(/\{([^\}]+)\}/g, function(m, n) { return data[n]; });
     };
 
     /**
@@ -1251,14 +1249,17 @@
      */
     $.uix.multiselect.i18n = {
         '': {
+            itemsSelected_nil: 'no selected option',           // 0
             itemsSelected: '{count} selected option',          // 0, 1
             itemsSelected_plural: '{count} selected options',  // n
             //itemsSelected_plural_two: ...                    // 2
             //itemsSelected_plural_few: ...                    // 3, 4
+            itemsAvailable_nil: 'no item available',
             itemsAvailable: '{count} available option',
             itemsAvailable_plural: '{count} available options',
             //itemsAvailable_plural_two: ...
             //itemsAvailable_plural_few: ...
+            itemsFiltered_nil: 'no option filtered',
             itemsFiltered: '{count} option filtered',
             itemsFiltered_plural: '{count} options filtered',
             //itemsFiltered_plural_two: ...
