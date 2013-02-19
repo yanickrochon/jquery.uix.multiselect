@@ -42,7 +42,10 @@
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
             splitRatio: 0.55,              // % of the left list's width of the widget total width (default 0.55)
             sortable: false,               // if the selected list should be user sortable or not
-            sortMethod: null               // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
+            sortMethod: null,               // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
+            groupExpandIcon: 'ui-icon-triangle-1-e',    // Expand icon, can be '' or any jquery ui icon (default: ui-icon-triangle-1-e)
+            groupCollapseIcon: 'ui-icon-triangle-1-s',    // Collapse icon, can be '' or any jquery ui icon (default: ui-icon-triangle-1-s)
+            groupOptionIcon: 'ui-icon-bullet'    		// Group options icon, can be '' or any jquery ui icon (default: ui-icon-bullet)
         },
 
         _create: function() {
@@ -724,7 +727,7 @@
                 var h = $('<span></span>').addClass('ui-icon collapse-handle')
                     .attr('data-localekey', 'collapseGroup')
                     .attr('title', this._widget._t('collapseGroup'))
-                    .addClass('ui-icon-triangle-1-s')
+                    .addClass(this._widget.options.groupCollapseIcon)
                     .mousedown(function(e) { e.stopPropagation(); })
                     .click(function(e) { e.preventDefault(); e.stopPropagation(); fnToggle(); return false; })
                     .prependTo(e.addClass('group-element-collapsable'))
@@ -734,8 +737,8 @@
                     var gDataDst = getLocalData()[selected?'selected':'available'];
                     gDataDst.collapsed = !gDataDst.collapsed;
                     gDataDst.listContainer.slideToggle();  // animate options?
-                    h.removeClass('ui-icon-triangle-1-' + (gDataDst.collapsed ? 's' : 'e'))
-                     .addClass('ui-icon-triangle-1-' + (gDataDst.collapsed ? 'e' : 's'));
+                    h.removeClass(gDataDst.collapsed ? obj._widget.options.groupCollapseIcon : obj._widget.options.groupExpandIcon)
+                     .addClass(gDataDst.collapsed ? obj._widget.options.groupExpandIcon : obj._widget.options.groupCollapseIcon);
                 };
             }
             return $('<div></div>')
