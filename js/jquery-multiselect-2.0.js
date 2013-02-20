@@ -720,9 +720,9 @@
             ;
 
             var fnToggle,
-                groupIcon = (grpElement) ? grpElement.attr('uix-group-icon') : null;
+                groupIcon = (grpElement) ? grpElement.attr('data-group-icon') : null;
             if (this._widget.options.collapsableGroups) {
-                var collapseIconAttr = (grpElement) ? grpElement.attr('uix-collapse-icon') : null,
+                var collapseIconAttr = (grpElement) ? grpElement.attr('data-collapse-icon') : null,
                     grpCollapseIcon = (collapseIconAttr) ? collapseIconAttr : 'ui-icon ui-icon-triangle-1-s';
                 var h = $('<span></span>').addClass('ui-icon collapse-handle')
                     .attr('data-localekey', 'collapseGroup')
@@ -735,8 +735,8 @@
 
                 fnToggle = function(grpElement) {
                     var gDataDst = getLocalData()[selected?'selected':'available'],
-                        collapseIconAttr = (grpElement) ? grpElement.attr('uix-collapse-icon') : null,
-                        expandIconAttr = (grpElement) ? grpElement.attr('uix-expand-icon') : null,
+                        collapseIconAttr = (grpElement) ? grpElement.attr('data-collapse-icon') : null,
+                        expandIconAttr = (grpElement) ? grpElement.attr('data-expand-icon') : null,
                         collapseIcon = (collapseIconAttr) ? collapseIconAttr : 'ui-icon ui-icon-triangle-1-s',
                         expandIcon = (expandIconAttr) ? expandIconAttr : 'ui-icon ui-icon-triangle-1-e';
                     gDataDst.collapsed = !gDataDst.collapsed;
@@ -815,7 +815,7 @@
             var o = this._widget.options.optionRenderer
                   ? this._widget.options.optionRenderer(optElement, optGroup)
                   : $('<div></div>').text(optElement.text());
-            var optIcon = optElement.attr("uix-option-icon");
+            var optIcon = optElement.attr("data-option-icon");
             var e = $('<div></div>').append(o).addClass('ui-state-default option-element')
                 .attr("unselectable", "on")  // disable text selection on this element (IE, Opera)
                 .data('element-index', -1)
