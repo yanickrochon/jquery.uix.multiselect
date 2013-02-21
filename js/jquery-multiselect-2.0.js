@@ -723,7 +723,7 @@
                 groupIcon = (grpElement) ? grpElement.attr('data-group-icon') : null;
             if (this._widget.options.collapsableGroups) {
                 var collapseIconAttr = (grpElement) ? grpElement.attr('data-collapse-icon') : null,
-                    grpCollapseIcon = (collapseIconAttr) ? collapseIconAttr : 'ui-icon ui-icon-triangle-1-s';
+                    grpCollapseIcon = (collapseIconAttr) ? 'ui-icon ' + collapseIconAttr : 'ui-icon ui-icon-triangle-1-s';
                 var h = $('<span></span>').addClass('ui-icon collapse-handle')
                     .attr('data-localekey', 'collapseGroup')
                     .attr('title', this._widget._t('collapseGroup'))
@@ -737,8 +737,8 @@
                     var gDataDst = getLocalData()[selected?'selected':'available'],
                         collapseIconAttr = (grpElement) ? grpElement.attr('data-collapse-icon') : null,
                         expandIconAttr = (grpElement) ? grpElement.attr('data-expand-icon') : null,
-                        collapseIcon = (collapseIconAttr) ? collapseIconAttr : 'ui-icon ui-icon-triangle-1-s',
-                        expandIcon = (expandIconAttr) ? expandIconAttr : 'ui-icon ui-icon-triangle-1-e';
+                        collapseIcon = (collapseIconAttr) ? 'ui-icon ' + collapseIconAttr : 'ui-icon ui-icon-triangle-1-s',
+                        expandIcon = (expandIconAttr) ? 'ui-icon ' + expandIconAttr : 'ui-icon ui-icon-triangle-1-e';
                     gDataDst.collapsed = !gDataDst.collapsed;
                     gDataDst.listContainer.slideToggle();  // animate options?
                     h.removeClass(gDataDst.collapsed ? collapseIcon : expandIcon)
@@ -858,7 +858,7 @@
                 e[(optElement.prop('disabled') ? "add" : "remove") + "Class"]('ui-state-disabled');
             }
             if (optIcon) {
-                e.addClass('grouped-option').prepend($('<span></span>').addClass(optIcon));
+                e.addClass('grouped-option').prepend($('<span></span>').addClass('ui-icon ' + optIcon));
             }
             return e;
         },
