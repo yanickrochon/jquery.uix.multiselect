@@ -42,10 +42,7 @@
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
             splitRatio: 0.55,              // % of the left list's width of the widget total width (default 0.55)
             sortable: false,               // if the selected list should be user sortable or not
-            sortMethod: null,               // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
-            groupExpandIcon: 'ui-icon-triangle-1-e',    // Expand icon, can be '' or any jquery ui icon (default: ui-icon-triangle-1-e)
-            groupCollapseIcon: 'ui-icon-triangle-1-s',    // Collapse icon, can be '' or any jquery ui icon (default: ui-icon-triangle-1-s)
-            groupOptionIcon: 'ui-icon-bullet'    		// Group options icon, can be '' or any jquery ui icon (default: ui-icon-bullet)
+            sortMethod: null               // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
         },
 
         _create: function() {
@@ -722,24 +719,37 @@
                 .append(labelCount)
             ;
 
-            var fnToggle;
+            var fnToggle,
+                groupIcon = (grpElement) ? grpElement.attr('data-group-icon') : null;
             if (this._widget.options.collapsableGroups) {
+                var collapseIconAttr = (grpElement) ? grpElement.attr('data-collapse-icon') : null,
+                    grpCollapseIcon = (collapseIconAttr) ? 'ui-icon ' + collapseIconAttr : 'ui-icon ui-icon-triangle-1-s';
                 var h = $('<span></span>').addClass('ui-icon collapse-handle')
                     .attr('data-localekey', 'collapseGroup')
                     .attr('title', this._widget._t('collapseGroup'))
-                    .addClass(this._widget.options.groupCollapseIcon)
+                    .addClass(grpCollapseIcon)
                     .mousedown(function(e) { e.stopPropagation(); })
-                    .click(function(e) { e.preventDefault(); e.stopPropagation(); fnToggle(); return false; })
+                    .click(function(e) { e.preventDefault(); e.stopPropagation(); fnToggle(grpElement); return false; })
                     .prependTo(e.addClass('group-element-collapsable'))
                 ;
 
-                fnToggle = function() {
-                    var gDataDst = getLocalData()[selected?'selected':'available'];
+                fnToggle = function(grpElement) {
+                    var gDataDst = getLocalData()[selected?'selected':'available'],
+                        collapseIconAttr = (grpElement) ? grpElement.attr('data-collapse-icon') : null,
+                        expandIconAttr = (grpElement) ? grpElement.attr('data-expand-icon') : null,
+                        collapseIcon = (collapseIconAttr) ? 'ui-icon ' + collapseIconAttr : 'ui-icon ui-icon-triangle-1-s',
+                        expandIcon = (expandIconAttr) ? 'ui-icon ' + expandIconAttr : 'ui-icon ui-icon-triangle-1-e';
                     gDataDst.collapsed = !gDataDst.collapsed;
                     gDataDst.listContainer.slideToggle();  // animate options?
-                    h.removeClass(gDataDst.collapsed ? obj._widget.options.groupCollapseIcon : obj._widget.options.groupExpandIcon)
-                     .addClass(gDataDst.collapsed ? obj._widget.options.groupExpandIcon : obj._widget.options.groupCollapseIcon);
+                    h.removeClass(gDataDst.collapsed ? collapseIcon : expandIcon)
+                     .addClass(gDataDst.collapsed ? expandIcon : collapseIcon);
                 };
+            }else{
+                if (groupIcon) {
+                    $('<span></span>').addClass('collapse-handle '+groupIcon)
+                        .css('cursor','default')
+                        .prependTo(e.addClass('group-element-collapsable'));                        
+                }
             }
             return $('<div></div>')
                 // create an utility function to update group element count
@@ -805,6 +815,7 @@
             var o = this._widget.options.optionRenderer
                   ? this._widget.options.optionRenderer(optElement, optGroup)
                   : $('<div></div>').text(optElement.text());
+            var optIcon = optElement.attr("data-option-icon");
             var e = $('<div></div>').append(o).addClass('ui-state-default option-element')
                 .attr("unselectable", "on")  // disable text selection on this element (IE, Opera)
                 .data('element-index', -1)
@@ -846,8 +857,8 @@
             } else if (optElement.prop('disabled')) {
                 e[(optElement.prop('disabled') ? "add" : "remove") + "Class"]('ui-state-disabled');
             }
-            if (optGroup) {
-                e.addClass('grouped-option').prepend($('<span></span>').addClass('ui-icon ui-icon-bullet'));
+            if (optIcon) {
+                e.addClass('grouped-option').prepend($('<span></span>').addClass('ui-icon ' + optIcon));
             }
             return e;
         },
