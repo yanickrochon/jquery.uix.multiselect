@@ -440,7 +440,12 @@
             switch(key) {
                 // TODO
             }
-            this._superApply(arguments);
+    		if (typeof(this._superApply) == 'function'){
+                this._superApply(arguments);				
+			}else{
+                $.Widget.prototype._setOption.apply(this, arguments);				
+			}            
+            
         }
 
     });
