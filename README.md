@@ -1,18 +1,18 @@
 -----
-#Please, by advised that...
+#Please, note that...
 -----
 
-> On **March 4th 2013**, this repository will change it's name for **`jquery.uix.multiselect`**
+> As of **March 4th 2013**, this repository has changed it's name from **`jquery.multiselect-2`**
 > to follow the same naming convention as my other jQuery UIx widgets. On that date, all
-> forks will still point to this repository and will not be affected by this change, 
-> however any external references to it will have to be updated to maintain reliability.
+> forks still point to this repository and were not supposed to be affected by this change,
+> however any external references has to be updated to maintain reliability.
 > It is also recommended to rename your forks as well (but you don't *have* to... if you
 > don't want to... I guess)
 
 -----
 
 
-jQuery Multiselect
+jQuery UIx Multiselect
 ==================
 Version 2.0 RC
 
@@ -73,7 +73,7 @@ To programmatically select/deselect, add/modify/remove items, you may access and
 
     $('selector').multiselect('destroy');  // restore original element
 
-See [wiki documentation](https://github.com/yanickrochon/jquery.multiselect-2/wiki) for more information.
+See [wiki documentation](https://github.com/yanickrochon/jquery.uix.multiselect/wiki) for more information.
 
 
 TODO
