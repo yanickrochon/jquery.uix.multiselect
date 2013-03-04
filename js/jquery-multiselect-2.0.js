@@ -14,7 +14,7 @@
  *
  */
 
-(function($) {
+;(function($, undefined) {
     var globalScope = 0;
 
     var DEF_OPTGROUP = '';
@@ -259,6 +259,7 @@
                 this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-' + (isToggle ? 'left' : 'all'))[isToggle ? 'hide' : 'show']()
                     .insertBefore( this._headers[searchHeader] )
                     .focus(function() { $(this).select(); })
+                    .on("keydown keypress", function(e) { if (e.keyCode == 13) { e.preventDefault(); e.stopPropagation(); return false; } })
                     .keyup($.proxy(this._searchDelayed.request, this._searchDelayed));
             }
         },
@@ -751,7 +752,7 @@
                 if (groupIcon) {
                     $('<span></span>').addClass('collapse-handle '+groupIcon)
                         .css('cursor','default')
-                        .prependTo(e.addClass('group-element-collapsable'));                        
+                        .prependTo(e.addClass('group-element-collapsable'));
                 }
             }
             return $('<div></div>')
