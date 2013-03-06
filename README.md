@@ -94,4 +94,4 @@ Limitations
   reordered between two options of a different group. As this widget's purpose is not to extend the original element's behaviour
   beyound user interaction and presentation, this limitation shall not be lifted for the time being.
 * This widget was designed for modern browsers usage. It is working fine in IE7+, Firefox and Chrome. Note that it
-  *will not work* in quirks mode. There will be little to no support for non standards compliant browsers.
+  *will not work* in quirks mode. There will be little to no support for [non standards compliant browsers](http://www.ie6countdown.com/).
