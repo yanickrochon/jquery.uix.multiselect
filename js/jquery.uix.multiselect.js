@@ -63,7 +63,7 @@
                 .append(
                     $('<div></div>').addClass('multiselect-selected-list')
                         .append( $('<div></div>').addClass('ui-widget-header')
-                            .append( btnDeselectAll = $('<button></button>').addClass('uix-control-right')
+                            .append( btnDeselectAll = $('<button></button>', { type:"button" }).addClass('uix-control-right')
                                 .attr('data-localekey', 'deselectAll')
                                 .attr('title', this._t('deselectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-e'}, text:false})
@@ -76,7 +76,7 @@
                 ['right,top'.indexOf(this.options.availableListPosition)>=0?'prepend':'append'](
                     $('<div></div>').addClass('multiselect-available-list')
                         .append( $('<div></div>').addClass('ui-widget-header')
-                            .append( btnSelectAll = $('<button></button>').addClass('uix-control-right')
+                            .append( btnSelectAll = $('<button></button>', { type:"button" }).addClass('uix-control-right')
                                 .attr('data-localekey', 'selectAll')
                                 .attr('title', this._t('selectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false})
@@ -230,7 +230,7 @@
 
             if (isToggle) {
                 var that = this;
-                this._buttons['search'] = $('<button></button').addClass('uix-control-right')
+                this._buttons['search'] = $('<button></button', { type:"button" }).addClass('uix-control-right')
                     .attr('data-localekey', 'search')
                     .attr('title', this._t('search'))
                     .button({icons:{primary:'ui-icon-search'}, text:false})
@@ -688,7 +688,7 @@
 
             var e = $('<div></div>')
                 .addClass('ui-widget-header ui-priority-secondary group-element')
-                .append( $('<button></button>').addClass('uix-control-right')
+                .append( $('<button></button>', { type:"button" }).addClass('uix-control-right')
                     .attr('data-localekey', (selected?'de':'')+'selectAllGroup')
                     .attr('title', this._widget._t((selected?'de':'')+'selectAllGroup'))
                     .button({icons:{primary:transferIcon(this._widget.options.availableListPosition, 'ui-icon-arrowstop-1-', selected)}, text:false})
