@@ -14,19 +14,33 @@
  *
  */
 
-;(function($, undefined) {
+;(function($, window, undefined) {
+    // ECMAScript 5 Strict Mode: [John Resig Blog Post](http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/)
+    "use strict";
+
+    // Each instance must have their own drag and drop scope. We use a global page scope counter
+    // so we do not create two instances with mistankenly the same scope! We do not support
+    // cross instance drag and drop; this would require also copying the OPTION element and it
+    // would slow the component down. This is not the widget's contract anyhow.
     var globalScope = 0;
 
     var DEF_OPTGROUP = '';
     var PRE_OPTGROUP = 'group-';
 
+    // these events will trigger on the original element
+    //var NATIVE_EVENTS = ["change"];   // for version 2.1
+
+    // a list of predefined events
+    //var EVENT_CHANGE = 'change';    // for version 2.1
     var EVENT_CHANGE = 'multiselectChange';
+    //var EVENT_SEARCH = 'beforesearch';   // for version 2.1
     var EVENT_SEARCH = 'multiselectSearch';
 
     // The jQuery.uix namespace will automatically be created if it doesn't exist
     $.widget("uix.multiselect", {
         options: {
             availableListPosition: 'right',// 'top', 'right', 'bottom', 'left'; the position of the available list (default: 'right')
+            // beforesearch: null,            // a funciton called before searching. If the default is prevented, search will not happen (for version 2.1)
             collapsableGroups: true,       // tells whether the option groups can be collapsed or not (default: true)
             defaultGroupName: '',          // the name of the default option group (default: '')
             filterSelected: false,         // when searching, filter selected options also? (default: false)
@@ -35,7 +49,9 @@
             moveEffectOptions: {},         // effect options (see jQuery UI documentation) (default: {})
             moveEffectSpeed: null,         // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
             optionRenderer: false,         // a function that will return the item element to be rendered in the list (default: false)
+            optionGroupRenderer: false,    // a function that will return the group item element to be rendered (default: false)
             searchField: 'toggle',         // false, true, 'toggle'; set the search field behaviour (default: 'toggle')
+            searchFilter: null,            // a search filter. Will receive the OPTION element and should return a boolean value.
             searchHeader: 'available',     // 'available', 'selected'; set the list header that will host the search field (default: 'available')
             selectionMode: 'click,d&d',    // how options can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'click,d&d')
             showDefaultGroupHeader: false, // show the default option group header (default: false)
@@ -136,8 +152,8 @@
 
                 for (var i=0, l1=options.length; i<l1; i++) {
                     opt = options[i];
-                    if (opt.nodeType == 1) {
-                        if (opt.tagName.toUpperCase() == 'OPTGROUP') {
+                    if (opt.nodeType === 1) {
+                        if (opt.tagName.toUpperCase() === 'OPTGROUP') {
                             var optGroup = $(opt).data('option-group') || (PRE_OPTGROUP + (this.optionGroupIndex++));
                             var grpOptions = opt.childNodes;
 
@@ -145,7 +161,7 @@
 
                             for (var j=0, l2=grpOptions.length; j<l2; j++) {
                                 opt = grpOptions[j];
-                                if (opt.nodeType == 1) {
+                                if (opt.nodeType === 1) {
                                     this.optionCache.prepareOption($(opt), optGroup);
                                 }
                             }
@@ -192,7 +208,7 @@
          */
         locale: function(locale) {
 
-            if (locale == undefined) {
+            if (locale === undefined) {
                 return this.options.locale;
             } else {
                 this._setLocale(locale);
@@ -202,9 +218,7 @@
             }
         },
 
-        destroy: function() {
-            this._super();
-
+        _destroy: function() {
             this.optionCache.reset(true);
             this._lists['selected'].empty().remove();
             this._lists['available'].empty().remove();
@@ -318,18 +332,16 @@
             }
         },
 
-        _search: function(text, silent) {
+        _search: function(term, silent) {
             if (this._searchField.is(':visible')) {
-                if (text) {
-                    this._searchField.val(text);
+                if (typeof term === "string") {   // issue #36
+                    this._searchField.val(term);
                 } else {
-                    text = this._searchField.val();
+                    term = this._searchField.val();
                 }
-            } else {
-                text = (""+text);
             }
 
-            this.optionCache.filter(text, silent);
+            this.optionCache.filter(term, silent);
         },
 
         _setLocale: function(locale) {
@@ -376,6 +388,7 @@
         },
 
         // call this method whenever the widget resizes
+        // NOTE : the widget MUST be visible and have a width and height when calling this
         _resize: function() {
             var pos = this.options.availableListPosition.toLowerCase();         // shortcut
             var sSize = ('left,right'.indexOf(pos) >= 0) ? 'Width' : 'Height';  // split size fn
@@ -415,7 +428,7 @@
             }
             // adjust search field width
             if (this._searchField) {
-                this._searchField.width( this._headers['available'].parent().width() - (isToggle ? 48 : 24) );
+                this._searchField.width( (sSize === 'Width' ? cAv : this.element.width()) - (isToggle ? 52 : 26) );  // issue #50
             }
 
             // calculate inner lists height
@@ -427,11 +440,22 @@
          * return false if the event was prevented by an handler, true otherwise
          */
         _triggerUIEvent: function(event, ui) {
-            if (typeof event == 'string') {
+            var eventType;
+
+            if (typeof event === 'string') {
+                eventType = event;
                 event = $.Event(event);
+            } else {
+                eventType = event.type;
             }
 
-            this.element.trigger(event, ui);
+            //console.log($.inArray(event.type, NATIVE_EVENTS));
+
+            //if ($.inArray(event.type, NATIVE_EVENTS) > -1) {
+                this.element.trigger(event, ui);
+            //} else {
+            //    this._trigger(eventType, event, ui);
+            //}
 
             return !event.isDefaultPrevented();
         },
@@ -973,9 +997,9 @@
             this._listContainers['available'].empty();
 
             if (destroy) {
-                $.each(this._elements, function(i, e) {
-                   e.optionElement.removeData('element-index');
-                });
+                for (var i=0, e=this._elements, len=e.length; i<len; i++) {
+                    e[i].optionElement.removeData('element-index');
+                }
                 delete this._elements;
                 delete this._groups;
                 delete this._listContainers;
@@ -1133,12 +1157,12 @@
 
         },
 
-        filter: function(text, silent) {
+        filter: function(term, silent) {
 
-            if (text && !silent) {
-                var ui = { text:text };
+            if (term && !silent) {
+                var ui = { term:term };
                 if (this._widget._triggerUIEvent(EVENT_SEARCH, ui )) {
-                    text = ui.text;  // update text
+                    term = ui.term;  // update term
                 } else {
                     return;
                 }
@@ -1147,15 +1171,17 @@
             this._bufferedMode(true);
 
             var filterSelected = this._widget.options.filterSelected;
-
-            text = (''+text).toLowerCase();
-            if (text.length == 0) {
-                text = false;
-            }
+            var filterFn = this._widget.options.searchFilter || function(term, opt) {
+                //return !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
+                return opt.innerHTML.toLowerCase().indexOf(term) > -1;
+            };
+            term = (this._widget.options.searchPreFilter || function(term) {
+                return term ? (term+"").toLowerCase() : false;
+            })(term);
 
             for (var i=0, eData, len=this._elements.length, filtered; i<len; i++) {
                 eData = this._elements[i];
-                filtered = !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
+                filtered = !(!term || filterFn(term, eData.optionElement[0]));
 
                 if ((!eData.selected || filterSelected) && (eData.filtered != filtered)) {
                     eData.listElement[filtered ? 'hide' : 'show']();
@@ -1247,13 +1273,13 @@
         var data = p.data || {};
         var t;
 
-        if (plural == 2 && i18n[p.key+'_plural_two']) {
+        if (plural === 2 && i18n[p.key+'_plural_two']) {
             t = i18n[p.key+'_plural_two'];
-        } else if ((plural == 2 || plural == 3) && i18n[p.key+'_plural_few']) {
+        } else if ((plural === 2 || plural === 3) && i18n[p.key+'_plural_few']) {
             t = i18n[p.key+'_plural_few']
         } else if (plural > 1 && i18n[p.key+'_plural']) {
             t = i18n[p.key+'_plural'];
-        } else if (plural == 0 && i18n[p.key+'_nil']) {
+        } else if (plural === 0 && i18n[p.key+'_nil']) {
             t = i18n[p.key+'_nil'];
         } else {
             t = i18n[p.key] || '';
@@ -1292,4 +1318,4 @@
         }
     };
 
-})(jQuery);
+})(jQuery, window);

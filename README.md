@@ -35,6 +35,8 @@ Release notes
 
 This widget is stable enough to be used in staging environments. However it is *still* under development, in testing phase, as some features may require more feedbacks yet! (Mainly browser compatiblity.) At this point, expect minor bug fixes within 72 hours, and there will be no more features planned at this point.
 
+The compressed (minified) version is created using the [YUI Compressor](http://refresh-sf.com/yui/).
+
 Requirements
 ------------
 
@@ -80,6 +82,7 @@ TODO
 ----
 
 * <del>add custom item rendering support</del> *(needs more tests)*
+* HTML5 ARIA attributes
 * Make all options as mutable as possible after initialization.
 * Test in all major browsers *(not fully tested)*
 * Mobile support

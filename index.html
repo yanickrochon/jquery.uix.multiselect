@@ -8,7 +8,7 @@
         <link type="text/css" href="css/jquery.uix.multiselect.css" rel="stylesheet" />
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
         <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="js/jquery.uix.multiselect.js"></script>
+        <script type="text/javascript" src="js/jquery.uix.multiselect.min.js"></script>
         <script type="text/javascript" src="js/locales/jquery.uix.multiselect_de.js"></script>
         <script type="text/javascript" src="js/locales/jquery.uix.multiselect_es.js"></script>
         <script type="text/javascript" src="js/locales/jquery.uix.multiselect_fr.js"></script>
@@ -50,11 +50,11 @@
                 };
 
                 $.each(widgets, function(k, i) {
-                    $('#multiselect_'+k).multiselect(i).bind('multiselectChange', function(evt, ui) {
+                    $('#multiselect_'+k).multiselect(i).on('multiselectChange', function(evt, ui) {
                         var values = $.map(ui.optionElements, function(opt) { return $(opt).attr('value'); }).join(', ');
                         $('#debug_'+k).prepend( $('<div></div>').text('Multiselect change event! ' + (ui.optionElements.length == $('#multiselect_'+k).find('option').size() ? 'all ' : '') + (ui.optionElements.length + ' value' + (ui.optionElements.length > 1 ? 's were' : ' was')) + ' ' + (ui.selected ? 'selected' : 'deselected') + ' (' + values + ')') );
-                    }).bind('multiselectSearch', function(evt, ui) {
-                        $('#debug_'+k).prepend( $('<div></div>').text('Multiselect search event! searching for "' + ui.text + '"') );
+                    }).on('multiselectSearch', function(evt, ui) {
+                        $('#debug_'+k).prepend( $('<div></div>').text('Multiselect beforesearch event! searching for "' + ui.term + '"') );
                     }).closest('form').submit(function(evt) {
                         evt.preventDefault(); evt.stopPropagation();
 
