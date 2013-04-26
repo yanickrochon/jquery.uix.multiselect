@@ -42,6 +42,7 @@
             availableListPosition: 'right',// 'top', 'right', 'bottom', 'left'; the position of the available list (default: 'right')
             // beforesearch: null,            // a funciton called before searching. If the default is prevented, search will not happen (for version 2.1)
             collapsableGroups: true,       // tells whether the option groups can be collapsed or not (default: true)
+            created: null,                 // a function called when the widget is done loading (default: null)
             defaultGroupName: '',          // the name of the default option group (default: '')
             filterSelected: false,         // when searching, filter selected options also? (default: false)
             locale: 'auto',                // any valid locale, 'auto', or '' for default built-in strings (default: 'auto')
@@ -126,7 +127,7 @@
 
             this._applyListDroppable();
 
-            this.refresh();
+            this.refresh(this.options.created);
         },
 
         /**
