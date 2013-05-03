@@ -1282,7 +1282,7 @@
             t = i18n[p.key+'_plural'];
         } else if (plural === 0 && i18n[p.key+'_nil']) {
             t = i18n[p.key+'_nil'];
-        } else {
+        } else {
             t = i18n[p.key] || '';
         }
 
