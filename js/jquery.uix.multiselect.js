@@ -71,7 +71,12 @@
             this.optionGroupIndex = 1;
             this._setLocale(this.options.locale);
 
-            this.element.addClass('uix-multiselect-original');
+            this.element
+                .css({
+                    'width': this.element.outerWidth(),
+                    'height': this.element.outerHeight()
+                })
+                .addClass('uix-multiselect-original');
             this._elementWrapper = $('<div></div>').addClass('uix-multiselect ui-widget')
                 .css({
                     'width': this.element.outerWidth(),
