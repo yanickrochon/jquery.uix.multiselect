@@ -59,8 +59,8 @@
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
             splitRatio: 0.55,              // % of the left list's width of the widget total width (default 0.55)
             sortable: false,               // if the selected list should be user sortable or not
-            sortMethod: null,               // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
-            selectAll: 'both'              // 'available', 'selected', 'none' - Whether or not to display a select or deselect all icon (default: 'both')
+            sortMethod: null,              // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
+            selectAll: 'both'              // 'available', 'selected', 'both', 'none' - Whether or not to display a select or deselect all icon (default: 'both')
         },
 
         _create: function() {
@@ -86,13 +86,12 @@
                                 .attr('title', this._t('deselectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-e'}, text:false})
                                 .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(false); return false; })
-								[['both', 'selected'].indexOf(this.options.selectAll) === -1 ? 'hide' : 'show']()
+                                [['both', 'selected'].indexOf(this.options.selectAll) === -1 ? 'hide' : 'show']()
                             )
                             .append( selListHeader = $('<div></div>').addClass('header-text') )
                         )
                         .append( selListContent = $('<div></div>').addClass('uix-list-container ui-widget-content') )
                 )
-				// Prepend or append depending on position of available list
                 ['right,top'.indexOf(this.options.availableListPosition)>=0?'prepend':'append'](
                     $('<div></div>').addClass('multiselect-available-list')
                         .append( $('<div></div>').addClass('ui-widget-header')
@@ -101,7 +100,7 @@
                                 .attr('title', this._t('selectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false})
                                 .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(true); return false; })
-								[['both', 'available'].indexOf(this.options.selectAll) === -1 ? 'hide' : 'show']()
+                                [['both', 'available'].indexOf(this.options.selectAll) === -1 ? 'hide' : 'show']()
                             )
                             .append( avListHeader = $('<div></div>').addClass('header-text') )
 
@@ -471,9 +470,9 @@
                 // TODO
             }
             if (typeof(this._superApply) == 'function'){
-            	this._superApply(arguments);
+                this._superApply(arguments);
             }else{
-            	$.Widget.prototype._setOption.apply(this, arguments);
+                $.Widget.prototype._setOption.apply(this, arguments);
             }
         }
     });
