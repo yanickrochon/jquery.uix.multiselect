@@ -59,7 +59,8 @@
             showEmptyGroups: false,        // always display option groups even if empty (default: false)
             splitRatio: 0.55,              // % of the left list's width of the widget total width (default 0.55)
             sortable: false,               // if the selected list should be user sortable or not
-            sortMethod: null               // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
+            sortMethod: null,              // null, 'standard', 'natural'; a sort function name (see ItemComparators), or a custom function (default: null)
+            selectAll: 'both'              // 'available', 'selected', 'both', 'none' - Whether or not to display a select or deselect all icon (default: 'both')
         },
 
         _create: function() {
@@ -85,6 +86,7 @@
                                 .attr('title', this._t('deselectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-e'}, text:false})
                                 .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(false); return false; })
+                                [['both', 'selected'].indexOf(this.options.selectAll) === -1 ? 'hide' : 'show']()
                             )
                             .append( selListHeader = $('<div></div>').addClass('header-text') )
                         )
@@ -98,6 +100,7 @@
                                 .attr('title', this._t('selectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false})
                                 .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(true); return false; })
+                                [['both', 'available'].indexOf(this.options.selectAll) === -1 ? 'hide' : 'show']()
                             )
                             .append( avListHeader = $('<div></div>').addClass('header-text') )
 
@@ -467,9 +470,9 @@
                 // TODO
             }
             if (typeof(this._superApply) == 'function'){
-            	this._superApply(arguments);
+                this._superApply(arguments);
             }else{
-            	$.Widget.prototype._setOption.apply(this, arguments);
+                $.Widget.prototype._setOption.apply(this, arguments);
             }
         }
     });
@@ -535,10 +538,10 @@
     };
 
 
-    var transferDir = ['n','e','s','w'];                          // button icon direction
+    var transferDirection = ['n','e','s','w'];                          // button icon direction
     var transferOrientation = ['bottom','left','top','right'];    // list of matching directions with icons
     var transferIcon = function(pos, prefix, selected) {
-        return prefix + transferDir[($.inArray(pos.toLowerCase(), transferOrientation) + (selected ? 2 : 0)) % 4];
+        return prefix + transferDirection[($.inArray(pos.toLowerCase(), transferOrientation) + (selected ? 2 : 0)) % 4];
     };
 
     /**
@@ -1294,19 +1297,19 @@
      */
     $.uix.multiselect.i18n = {
         '': {
-            itemsSelected_nil: 'no selected option',           // 0
+            itemsSelected_nil: 'No options selected',           // 0
             itemsSelected: '{count} selected option',          // 0, 1
-            itemsSelected_plural: '{count} selected options',  // n
+            itemsSelected_plural: '{count} options selected',  // n
             //itemsSelected_plural_two: ...                    // 2
             //itemsSelected_plural_few: ...                    // 3, 4
-            itemsAvailable_nil: 'no item available',
-            itemsAvailable: '{count} available option',
-            itemsAvailable_plural: '{count} available options',
+            itemsAvailable_nil: 'No items available',
+            itemsAvailable: '{count} options available',
+            itemsAvailable_plural: '{count} options available',
             //itemsAvailable_plural_two: ...
             //itemsAvailable_plural_few: ...
-            itemsFiltered_nil: 'no option filtered',
-            itemsFiltered: '{count} option filtered',
-            itemsFiltered_plural: '{count} options filtered',
+            itemsFiltered_nil: 'No options found',
+            itemsFiltered: '{count} option found',
+            itemsFiltered_plural: '{count} options found',
             //itemsFiltered_plural_two: ...
             //itemsFiltered_plural_few: ...
             selectAll: 'Select All',
