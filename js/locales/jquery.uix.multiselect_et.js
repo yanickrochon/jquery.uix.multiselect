@@ -3,6 +3,7 @@
  *
  * Authors:
  *  Yanick Rochon (yanick.rochon[at]gmail[dot]com)
+ *  karmux (https://github.com/karmux)
  *
  * Dual licensed under the MIT (MIT-LICENSE.txt)
  * and GPL (GPL-LICENSE.txt) licenses.

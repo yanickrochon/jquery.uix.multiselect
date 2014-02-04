@@ -1,20 +1,6 @@
------
-#Please, note that...
------
-
-> As of **March 4th 2013**, this repository has changed it's name from **`jquery.multiselect-2`**
-> to follow the same naming convention as my other jQuery UIx widgets. On that date, all
-> forks still point to this repository and were not supposed to be affected by this change,
-> however any external references has to be updated to maintain reliability.
-> It is also recommended to rename your forks as well (but you don't *have* to... if you
-> don't want to... I guess)
-
------
-
-
 jQuery UIx Multiselect
 ==================
-Version 2.0 RC
+Version 2.0
 
 ![Preview](http://mind2soft.com/labs/jquery/multiselect/preview.png)
 

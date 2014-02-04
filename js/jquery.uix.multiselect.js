@@ -51,6 +51,7 @@
             moveEffectSpeed: null,         // string ('slow','fast') or number in millisecond (ignored if moveEffect is 'show') (default: null)
             optionRenderer: false,         // a function that will return the item element to be rendered in the list (default: false)
             optionGroupRenderer: false,    // a function that will return the group item element to be rendered (default: false)
+            searchDelay: 500,              // the search delay in ms (default: 500)
             searchField: 'toggle',         // false, true, 'toggle'; set the search field behaviour (default: 'toggle')
             searchFilter: null,            // a search filter. Will receive the OPTION element and should return a boolean value.
             searchHeader: 'available',     // 'available', 'selected'; set the list header that will host the search field (default: 'available')
@@ -124,7 +125,7 @@
             };
 
             this.optionCache = new OptionCache(this);
-            this._searchDelayed = new SearchDelayed(this, {delay: 500});
+            this._searchDelayed = new SearchDelayed(this);
 
             this._initSearchable();
 
@@ -572,7 +573,7 @@
                 this._lastSearchValue = this._widget._searchField.val();
 
                 this._widget._search();
-            }, this._options.delay, this);
+            }, this._widget.options.searchDelay, this);
         },
         cancelLastRequest: function() {
             if (this._timeout) {
@@ -1297,7 +1298,7 @@
      */
     $.uix.multiselect.i18n = {
         '': {
-            itemsSelected_nil: 'No options selected',           // 0
+            itemsSelected_nil: 'No options selected',          // 0
             itemsSelected: '{count} selected option',          // 0, 1
             itemsSelected_plural: '{count} options selected',  // n
             //itemsSelected_plural_two: ...                    // 2

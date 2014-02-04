@@ -17,28 +17,28 @@
 (function($) {
 
 $.uix.multiselect.i18n['en'] = {
-    itemsSelected_nil: 'no selected option',           // 0
-    itemsSelected: '{count} selected option',          // 0, 1
-    itemsSelected_plural: '{count} selected options',  // n
-    //itemsSelected_plural_two: ...                    // 2
-    //itemsSelected_plural_few: ...                    // 3, 4
-    itemsAvailable_nil: 'no item available',
-    itemsAvailable: '{count} available option',
-    itemsAvailable_plural: '{count} available options',
-    //itemsAvailable_plural_two: ...
-    //itemsAvailable_plural_few: ...
-    itemsFiltered_nil: 'no option filtered',
-    itemsFiltered: '{count} option filtered',
-    itemsFiltered_plural: '{count} options filtered',
-    //itemsFiltered_plural_two: ...
-    //itemsFiltered_plural_few: ...
-    selectAll: 'Select All',
-    deselectAll: 'Deselect All',
-    search: 'Search Options',
-    collapseGroup: 'Collapse Group',
-    expandGroup: 'Expand Group',
-    selectAllGroup: 'Select All Group',
-    deselectAllGroup: 'Deselect All Group'
+  itemsSelected_nil: 'No options selected',          // 0
+  itemsSelected: '{count} selected option',          // 0, 1
+  itemsSelected_plural: '{count} options selected',  // n
+  //itemsSelected_plural_two: ...                    // 2
+  //itemsSelected_plural_few: ...                    // 3, 4
+  itemsAvailable_nil: 'No items available',
+  itemsAvailable: '{count} options available',
+  itemsAvailable_plural: '{count} options available',
+  //itemsAvailable_plural_two: ...
+  //itemsAvailable_plural_few: ...
+  itemsFiltered_nil: 'No options found',
+  itemsFiltered: '{count} option found',
+  itemsFiltered_plural: '{count} options found',
+  //itemsFiltered_plural_two: ...
+  //itemsFiltered_plural_few: ...
+  selectAll: 'Select All',
+  deselectAll: 'Deselect All',
+  search: 'Search Options',
+  collapseGroup: 'Collapse Group',
+  expandGroup: 'Expand Group',
+  selectAllGroup: 'Select All Group',
+  deselectAllGroup: 'Deselect All Group'
 };
 
 // link locales
