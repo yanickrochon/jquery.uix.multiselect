@@ -85,7 +85,7 @@
                                 .attr('title', this._t('deselectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-e'}, text:false})
                                 .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(false); return false; })
-                                [['both', 'selected'].indexOf(this.options.selectAll) === -1 ? 'hide' : 'show']()
+                                ['both,selected'.indexOf(this.options.selectAll)>=0 ? 'show' : 'hide']()
                             )
                             .append( selListHeader = $('<div></div>').addClass('header-text') )
                         )
@@ -99,7 +99,7 @@
                                 .attr('title', this._t('selectAll'))
                                 .button({icons:{primary:'ui-icon-arrowthickstop-1-w'}, text:false})
                                 .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(true); return false; })
-                                [['both', 'available'].indexOf(this.options.selectAll) === -1 ? 'hide' : 'show']()
+                                ['both,available'.indexOf(this.options.selectAll)>=0 ? 'show' : 'hide']()
                             )
                             .append( avListHeader = $('<div></div>').addClass('header-text') )
 
