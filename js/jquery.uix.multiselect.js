@@ -53,7 +53,8 @@
             optionGroupRenderer: false,    // a function that will return the group item element to be rendered (default: false)
             searchDelay: 500,              // the search delay in ms (default: 500)
             searchField: 'toggle',         // false, true, 'toggle'; set the search field behaviour (default: 'toggle')
-            searchFilter: null,            // a search filter. Will receive the OPTION element and should return a boolean value.
+            searchPreFilter: null,         // prepare the search term before filtering.
+            searchFilter: null,            // a search filter. Will receive the term and OPTION element and should return a boolean value.
             searchHeader: 'available',     // 'available', 'selected'; set the list header that will host the search field (default: 'available')
             selectionMode: 'click,d&d',    // how options can be selected separated by commas: 'click', "dblclick" and 'd&d' (default: 'click,d&d')
             showDefaultGroupHeader: false, // show the default option group header (default: false)
@@ -75,10 +76,7 @@
 
             this.element.addClass('uix-multiselect-original');
             this._elementWrapper = $('<div></div>').addClass('uix-multiselect ui-widget')
-                .css({
-                    'width': this.element.outerWidth(),
-                    'height': this.element.outerHeight()
-                })
+                .css(getElementDeclaredSize(this.element))
                 .append(
                     $('<div></div>').addClass('multiselect-selected-list')
                         .append( $('<div></div>').addClass('ui-widget-header')
@@ -150,7 +148,7 @@
          */
         refresh: function(callback) {
             this._resize();  // just make sure we display the widget right without delay
-            AsyncFunction(function() {
+            asyncFunction(function() {
                 this.optionCache.cleanup();
 
                 var opt, options = this.element[0].childNodes;
@@ -546,9 +544,37 @@
     };
 
     /**
+     * Try to get the element's declared width and height...
+     */
+    var getElementDeclaredSize = function(el) {
+      var clone = el.clone();
+      var initialWidth = el.outerWidth();
+      var initialHeight = el.outerHeight();
+      var container = $('<div>', { style: { position:'absolute', left:'-999999999px', width:initialWidth*2, height:initialHeight*2 } })
+        .appendTo($("body"))
+        .append(clone);
+      var parentWidth = container.innerWidth();
+      var parentHeight = container.innerHeight();
+      var otherWidth = clone.outerWidth();
+      var otherHeight = clone.outerHeight();
+
+      clone.remove();
+      container.remove();
+
+      return {
+        width: initialWidth === otherWidth
+          ? initialWidth + "px"
+          : (otherWidth / parentWidth * 100) + "%",
+        height: initialHeight === otherHeight
+          ? initialHeight + "px"
+          : (otherHeight / parentHeight * 100) + "%"
+      };
+    };
+
+    /**
      * setTimeout on steroids!
      */
-    var AsyncFunction = function(callback, timeout, self) {
+    var asyncFunction = function(callback, timeout, self) {
         var args = Array.prototype.slice.call(arguments, 3);
         return setTimeout(function() {
             callback.apply(self || window, args);
@@ -568,7 +594,7 @@
 
             this.cancelLastRequest();
 
-            this._timeout = AsyncFunction(function() {
+            this._timeout = asyncFunction(function() {
                 this._timeout = null;
                 this._lastSearchValue = this._widget._searchField.val();
 
@@ -1177,11 +1203,10 @@
 
             var filterSelected = this._widget.options.filterSelected;
             var filterFn = this._widget.options.searchFilter || function(term, opt) {
-                //return !(!text || (eData.optionElement.text().toLowerCase().indexOf(text) > -1));
-                return opt.innerHTML.toLowerCase().indexOf(term) > -1;
+                return opt.innerHTML.toLocaleLowerCase().indexOf(term) > -1;
             };
             term = (this._widget.options.searchPreFilter || function(term) {
-                return term ? (term+"").toLowerCase() : false;
+                return term ? (term+"").toLocaleLowerCase() : false;
             })(term);
 
             for (var i=0, eData, len=this._elements.length, filtered; i<len; i++) {
@@ -1198,7 +1223,6 @@
 
             this._widget._updateHeaders();
             this._bufferedMode(false);
-
         },
 
         getSelectionInfo: function() {
