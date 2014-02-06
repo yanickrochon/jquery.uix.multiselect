@@ -76,7 +76,10 @@
 
             this.element.addClass('uix-multiselect-original');
             this._elementWrapper = $('<div></div>').addClass('uix-multiselect ui-widget')
-                .css(getElementDeclaredSize(this.element))
+                .css({
+                  width: this.element.css('width'),
+                  height: this.element.css('height')
+                })
                 .append(
                     $('<div></div>').addClass('multiselect-selected-list')
                         .append( $('<div></div>').addClass('ui-widget-header')
@@ -541,34 +544,6 @@
     var transferOrientation = ['bottom','left','top','right'];    // list of matching directions with icons
     var transferIcon = function(pos, prefix, selected) {
         return prefix + transferDirection[($.inArray(pos.toLowerCase(), transferOrientation) + (selected ? 2 : 0)) % 4];
-    };
-
-    /**
-     * Try to get the element's declared width and height...
-     */
-    var getElementDeclaredSize = function(el) {
-      var clone = el.clone();
-      var initialWidth = el.outerWidth();
-      var initialHeight = el.outerHeight();
-      var container = $('<div>', { style: { position:'absolute', left:'-999999999px', width:initialWidth*2, height:initialHeight*2 } })
-        .appendTo($("body"))
-        .append(clone);
-      var parentWidth = container.innerWidth();
-      var parentHeight = container.innerHeight();
-      var otherWidth = clone.outerWidth();
-      var otherHeight = clone.outerHeight();
-
-      clone.remove();
-      container.remove();
-
-      return {
-        width: initialWidth === otherWidth
-          ? initialWidth + "px"
-          : (otherWidth / parentWidth * 100) + "%",
-        height: initialHeight === otherHeight
-          ? initialHeight + "px"
-          : (otherHeight / parentHeight * 100) + "%"
-      };
     };
 
     /**
