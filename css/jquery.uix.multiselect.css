@@ -1,15 +1,16 @@
 
 
-.uix-multiselect-original { position: absolute; left:-999999px; }
-.uix-multiselect { position: relative; float:left; }
-.uix-multiselect .multiselect-selected-list, .uix-multiselect .multiselect-available-list { position:absolute; overflow:hidden; }
+.uix-multiselect-original { position: absolute; left:999999px; }
+.uix-multiselect { position: relative; display:inline-block; }
+.uix-multiselect .uix-selected-list,
+.uix-multiselect .uix-available-list { position:absolute; overflow:hidden; }
 .uix-multiselect .ui-widget-header { overflow:hidden;  white-space:nowrap; padding:2px 4px; }
 .uix-multiselect .ui-widget-header div.header-text { white-space: nowrap; }
 .uix-multiselect .ui-widget-header .uix-control-right, .uix-multiselect .ui-widget-header .uix-control-left { width:16px; height:16px; }
 .uix-multiselect .ui-widget-header .uix-control-right { float:right; }
 .uix-multiselect .ui-widget-header .uix-control-left { float:left; }
 .uix-multiselect .ui-widget-header .uix-search { float:right; height:14px; font-size:80%; }
-.uix-multiselect .uix-list-container { position:relative; overflow:auto; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.uix-multiselect .uix-list-container { position:relative; height:100%; overflow:auto; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 .uix-multiselect .uix-list-container .ui-priority-secondary { padding-right:0; }
 .uix-multiselect .group-element { position:relative; padding-left:0;  white-space:nowrap; overflow:hidden; }
 .uix-multiselect .group-element-collapsable { padding-left:16px; }
@@ -22,3 +23,8 @@
 .dragged-grouped-element { padding-left:16px; }
 .uix-multiselect .grouped-option { position:relative; padding-left:16px }
 .uix-multiselect .grouped-option .ui-icon { position:absolute; left:0; }
+
+.uix-multiselect .uix-table { width:100%; height:100%; table-layout:fixed; }
+.uix-multiselect .uix-table tr { vertical-align:top; }
+.uix-multiselect .uix-table tbody td { position:relative; }
+.uix-multiselect .uix-table td.uix-table-row { border:none; margin:0; padding:0; }

@@ -76,9 +76,10 @@
 
             this.element.addClass('uix-multiselect-original');
             this._elementWrapper = $('<div></div>').addClass('uix-multiselect ui-widget')
+            /*
                 .css({
-                  width: this.element.css('width'),
-                  height: this.element.css('height')
+                  width: this.element[0].style.width || this.element.css('width'),
+                  height: this.element[0].style.height || this.element.css('height')
                 })
                 .append(
                     $('<div></div>').addClass('multiselect-selected-list')
@@ -109,9 +110,11 @@
                         )
                         .append( avListContent  = $('<div></div>').addClass('uix-list-container ui-widget-content') )
                 )
+                */
                 .insertAfter(this.element)
             ;
 
+            /*
             this._buttons = {
                 'selectAll': btnSelectAll,
                 'deselectAll': btnDeselectAll
@@ -124,11 +127,15 @@
                 'selected': selListContent.attr('id', this.scope+'_selListContent'),
                 'available': avListContent.attr('id', this.scope+'_avListContent')
             };
+            */
+            this._lists = {
+              'selected': this._initList(this.scope+'_selListContent', 'deselectAll', 'selected', false),
+              'available': this._initList(this.scope+'_avListContent', 'selectAll', 'available', true),
+              'buttonSearch': this._initSearchable()
+            };
 
             this.optionCache = new OptionCache(this);
             this._searchDelayed = new SearchDelayed(this);
-
-            this._initSearchable();
 
             this._applyListDroppable();
 
@@ -150,7 +157,7 @@
          * @param callback   function    a callback function called when the refresh is complete
          */
         refresh: function(callback) {
-            this._resize();  // just make sure we display the widget right without delay
+            this._doLayout();  // just make sure we display the widget right without delay
             asyncFunction(function() {
                 this.optionCache.cleanup();
 
@@ -201,7 +208,8 @@
             }
 
             if ((options.toggleInput != false) && !this._searchField.is(':visible')) {
-                this._buttons.search.trigger('click');
+                //this._buttons.search.trigger('click');
+                this._lists.buttonSearch.trigger('click');
             }
 
             this._search(options.text, !!options.silent);
@@ -226,8 +234,8 @@
 
         _destroy: function() {
             this.optionCache.reset(true);
-            this._lists['selected'].empty().remove();
-            this._lists['available'].empty().remove();
+            this._lists['selected'].listContent.empty().remove();
+            this._lists['available'].listContent.empty().remove();
             this._elementWrapper.empty().remove();
 
             delete this.optionCache;
@@ -244,44 +252,100 @@
          * ***************************************
          */
 
+        _initList: function(id, key, side, selectAll) {
+          var that = this;
+          var obj = {};
+
+          obj.listHeader = $('<div></div>').addClass('ui-widget-header')
+            .append( obj.buttonApplyAll = $('<button></button>', {
+                  'type': 'button',
+                  'data-localekey': key,
+                  'title': this._t(key)
+                }).addClass('uix-control-right')
+                .button({icons:{primary:'ui-icon-arrowthickstop-2-e-w'}, text:false})
+                .click(function(e) { e.preventDefault(); e.stopPropagation(); that.optionCache.setSelectedAll(selectAll); return false; })
+                [('both,'+side).indexOf(this.options.selectAll)>=0 ? 'show' : 'hide']()
+            )
+            .append( obj.labelHeader = $('<div></div>').addClass('header-text') )
+          ;
+          obj.listContent = $('<div></div>', { id: id }).addClass('uix-list-container uix-' + side + '-list ui-widget-content');
+
+          return obj;
+        },
+
         _initSearchable: function() {
+            /*
             var isToggle = ('toggle' === this.options.searchField);
-            var searchHeader = this.options.searchHeader;
+            //var searchHeader = this.options.searchHeader;
 
             if (isToggle) {
                 var that = this;
-                this._buttons['search'] = $('<button></button', { type:"button" }).addClass('uix-control-right')
-                    .attr('data-localekey', 'search')
-                    .attr('title', this._t('search'))
+                //this._buttons['search'] =
+                this._lists.buttonSearch = $('<button></button', {
+                      'type': 'button',
+                      'data-localekey': 'search',
+                      'title': this._t('search')
+                    }).addClass('uix-control-right')
                     .button({icons:{primary:'ui-icon-search'}, text:false})
                     .click(function(e) {
                         e.preventDefault(); e.stopPropagation();
                         if (that._searchField.is(':visible')) {
                             var b = $(this);
-                            that._headers[searchHeader].css('visibility', 'visible').fadeTo('fast', 1.0);
+                            //that._headers[searchHeader].css('visibility', 'visible').fadeTo('fast', 1.0);
+                            that._lists[that.options.searchHeader].labelHeader.css('visibility', 'visible').fadeTo('fast', 1.0);
                             that._searchField.hide('slide', {direction: 'right'}, 200, function() { b.removeClass('ui-corner-right ui-state-active').addClass('ui-corner-all'); });
                             that._searchDelayed.cancelLastRequest();
                             that.optionCache.filter('');
                         } else {
-                            that._headers[searchHeader].fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
+                            //that._headers[searchHeader].fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
+                            that._lists[that.options.searchHeader].labelHeader.fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
                             $(this).removeClass('ui-corner-all').addClass('ui-corner-right ui-state-active');
                             that._searchField.show('slide', {direction: 'right'}, 200, function() { $(this).focus(); });
                             that._search();
                         }
                         return false;
                     })
-                    .insertBefore( this._headers[searchHeader] );
+                    //.insertBefore( this._headers[searchHeader] );
+                    .insertBefore( this._lists[this.options.searchHeader].labelHeader );
             }
             if (this.options.searchField) {
                 if (!isToggle) {
-                    this._headers[searchHeader].hide();
+                    //this._headers[searchHeader].hide();
+                    this._lists[this.options.searchHeader].labelHeader.hide();
                 }
                 this._searchField = $('<input type="text" />').addClass('uix-search ui-widget-content ui-corner-' + (isToggle ? 'left' : 'all'))[isToggle ? 'hide' : 'show']()
-                    .insertBefore( this._headers[searchHeader] )
+                    //.insertBefore( this._headers[searchHeader] )
+                    .insertBefore( this._lists[this.options.searchHeader].labelHeader )
                     .focus(function() { $(this).select(); })
                     .on("keydown keypress", function(e) { if (e.keyCode == 13) { e.preventDefault(); e.stopPropagation(); return false; } })
                     .keyup($.proxy(this._searchDelayed.request, this._searchDelayed));
             }
+            */
+          var that = this;
+
+          return $('<button></button', {
+              'type': 'button',
+              'data-localekey': 'search',
+              'title': this._t('search')
+            }).addClass('uix-control-right')
+            .button({icons:{primary:'ui-icon-search'}, text:false})
+            .click(function(e) {
+                e.preventDefault(); e.stopPropagation();
+                if (that._searchField.is(':visible')) {
+                    var b = $(this);
+                    that._lists[that.options.searchHeader].labelHeader.css('visibility', 'visible').fadeTo('fast', 1.0);
+                    that._searchField.hide('slide', {direction: 'right'}, 200, function() { b.removeClass('ui-corner-right ui-state-active').addClass('ui-corner-all'); });
+                    that._searchDelayed.cancelLastRequest();
+                    that.optionCache.filter('');
+                } else {
+                    that._lists[that.options.searchHeader].labelHeader.fadeTo('fast', 0.1, function() { $(this).css('visibility', 'hidden'); });
+                    $(this).removeClass('ui-corner-all').addClass('ui-corner-right ui-state-active');
+                    that._searchField.show('slide', {direction: 'right'}, 200, function() { $(this).focus(); });
+                    that._search();
+                }
+                return false;
+            })
+          ;
         },
 
         _applyListDroppable: function() {
@@ -310,21 +374,21 @@
                 });
             }
 
-            initDroppable(this._lists['selected'], true);
-            initDroppable(this._lists['available'], false);
+            initDroppable(this._lists['selected'].listContent, true);
+            initDroppable(this._lists['available'].listContent, false);
 
             if (this.options.sortable) {
                 var that = this;
-                this._lists['selected'].sortable({
+                this._lists['selected'].listContent.sortable({
                      appendTo: 'parent',
                      axis: "y",
-                     containment: $('.multiselect-selected-list', this._elementWrapper), //"parent",
+                     containment: $('.uix-selected-list', this._elementWrapper), //"parent",
                      items: '.multiselect-element-wrapper',
                      handle: '.group-element',
                      revert: true,
-                     stop: $.proxy(function(evt, ui) {
+                     stop: function(evt, ui) {
                          var prevGroup;
-                         $('.multiselect-element-wrapper', that._lists['selected']).each(function() {
+                         $('.multiselect-element-wrapper', that._lists['selected'].listContent).each(function() {
                              var currGroup = that.optionCache._groups.get($(this).data('option-group'));
                              if (!prevGroup) {
                                  that.element.append(currGroup.groupElement);
@@ -333,7 +397,7 @@
                              }
                              prevGroup = currGroup;
                          });
-                     }, this)
+                     }
                  });
             }
         },
@@ -378,7 +442,8 @@
         _updateHeaders: function() {
             var t, info = this.optionCache.getSelectionInfo();
 
-            this._headers['selected']
+            //this._headers['selected']
+            this._lists['selected'].labelHeader
                 .text( t = this._t('itemsSelected', info.selected.total, {count:info.selected.total}) )
                 .parent().attr('title',
                     this.options.filterSelected
@@ -386,17 +451,133 @@
                       this._t('itemsFiltered', info.selected.filtered, {count:info.selected.filtered})
                     : t
                 );
-            this._headers['available']
+            //this._headers['available']
+            this._lists['available'].labelHeader
                 .text( this._t('itemsAvailable', info.available.total, {count:info.available.total}) )
                 .parent().attr('title',
                     this._t('itemsAvailable', info.available.count, {count:info.available.count}) + ", " +
                     this._t('itemsFiltered', info.available.filtered, {count:info.available.filtered}) );
         },
 
-        // call this method whenever the widget resizes
+        // call this method whenever the widget needs to be rendered or the layout refreshed.
         // NOTE : the widget MUST be visible and have a width and height when calling this
-        _resize: function() {
+        _doLayout: function() {
             var pos = this.options.availableListPosition.toLowerCase();         // shortcut
+            var listOrder = ['selected', 'available'];
+            var table = $('<table>', { cellspacing: '0' }).addClass('uix-table');
+            var tableContents;
+            var splitRatio = (this.options.splitRatio * 100) + '%';
+            var i;
+
+            ('left,top'.indexOf(pos) >= 0) && listOrder.reverse();
+
+            // cleanup
+            for (i = 0; i < 2; i++) {
+              this._lists[listOrder[i]].listHeader.detach();
+              this._lists[listOrder[i]].listContent.detach();
+            }
+
+            this._elementWrapper.css({
+              width: this.element[0].style.width || this.element.css('width'),
+              height: this.element[0].style.height || this.element.css('height')
+            });
+
+            this._lists.buttonSearch.insertBefore( this._lists[this.options.searchHeader].labelHeader );
+
+            if ('left,right'.indexOf(pos) >= 0) {  // horizontal
+
+              tableContents = $('<thead>')
+                .append($('<tr>')
+                  .append($('<th>', { css: { width: splitRatio } })
+                    .append( this._lists[listOrder[0]].listHeader )
+                  )
+                  .append($('<th>').append(this._lists[listOrder[1]].listHeader))
+                ).add($('<tbody>')
+                  .append($('<tr>')
+                    .append($('<td>').append(this._lists[listOrder[0]].listContent))
+                    .append($('<td>').append(this._lists[listOrder[1]].listContent))
+                  )
+                )
+              ;
+
+            } else {  // vertical
+
+              /*
+              <table cellspacing="0" class="uix-multiselect">
+                  <tbody>
+                  <tr style="height:40%;">
+                      <td class="vlayout-row">
+                          <table cellspacing="0">
+                              <thead>
+                                  <tr>
+                                      <th>Head 1.1</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                              <tr>
+                                  <td>Cell 1.1</td>
+                              </tr>
+                              </tbody>
+                          </table>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td class="vlayout-row">
+                          <table cellspacing="0">
+                              <thead>
+                                  <tr>
+                                      <th>Head 1.2</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                              <tr>
+                                  <td>Cell 1.2</td>
+                              </tr>
+                              </tbody>
+                          </table>
+                      </td>
+                  </tr>
+                  </tbody>
+              </table>
+              */
+
+              tableContents = $('<tbody>')
+                .append($('<tr>', { css: { height: splitRatio } })
+                  .append($('<td>').addClass('uix-table-row')
+                    .append(table.clone()
+                      .append($('<thead>')
+                        .append($('<tr>')
+                          .append($('<th>').append(this._lists[listOrder[0]].listHeader))
+                        )
+                      ).append($('<tbody>')
+                        .append($('<tr>')
+                          .append($('<td>').append(this._lists[listOrder[0]].listContent))
+                        )
+                      )
+                    )
+                  )
+                ).append($('<tr>')
+                  .append($('<td>').addClass('uix-table-row')
+                    .append(table.clone()
+                      .append($('<thead>')
+                        .append($('<tr>')
+                          .append($('<th>').append(this._lists[listOrder[1]].listHeader))
+                        )
+                      ).append($('<tbody>')
+                        .append($('<tr>')
+                          .append($('<td>').append(this._lists[listOrder[1]].listContent))
+                        )
+                      )
+                    )
+                  )
+                )
+              ;
+
+            }
+
+            table.append(tableContents).appendTo(this._elementWrapper.empty());
+
+            /*
             var sSize = ('left,right'.indexOf(pos) >= 0) ? 'Width' : 'Height';  // split size fn
             var tSize = ('left,right'.indexOf(pos) >= 0) ? 'Height' : 'Width';  // total size fn
             var cSl = this.element['outer'+sSize]() * this.options.splitRatio;  // list container size selected
@@ -440,6 +621,7 @@
             // calculate inner lists height
             this._lists['available'].height(hAv - this._headers['available'].parent().outerHeight() - 2);  // account for borders
             this._lists['selected'].height(hSl - this._headers['selected'].parent().outerHeight() - 2);    // account for borders
+            */
         },
 
         /**
@@ -665,8 +847,8 @@
     var OptionCache = function(widget) {
         this._widget = widget;
         this._listContainers = {
-            'selected': $('<div></div>').appendTo(this._widget._lists['selected']),
-            'available': $('<div></div>').appendTo(this._widget._lists['available'])
+            'selected': $('<div></div>').appendTo(this._widget._lists['selected'].listContent),
+            'available': $('<div></div>').appendTo(this._widget._lists['available'].listContent)
         };
 
         this._elements = [];
@@ -802,7 +984,7 @@
                 e.sortable({
                     tolerance: "pointer",
                     appendTo: this._widget._elementWrapper,
-                    connectWith: this._widget._lists['available'].attr('id'),
+                    connectWith: this._widget._lists['available'].listContent.attr('id'),
                     scope: this._widget.scope,
                     helper: 'clone',
                     receive: function(evt, ui) {
@@ -974,25 +1156,24 @@
         },
 
         _bufferedMode: function(enabled) {
+            var that = this;
+
             if (enabled) {
                 this._oldMoveEffect = this._moveEffect; this._moveEffect = null;
 
-                // backup lists' scroll position before going into buffered mode
-                this._widget._lists['selected'].data('scrollTop', this._widget._lists['selected'].scrollTop());
-                this._widget._lists['available'].data('scrollTop', this._widget._lists['available'].scrollTop());
-
-                this._listContainers['selected'].detach();
-                this._listContainers['available'].detach();
+                $.each(['selected', 'available'], function(index, listKey) {
+                  // backup lists' scroll position before going into buffered mode
+                  that._widget._lists[listKey].listContent.data('scrollTop', that._widget._lists[listKey].listContent.scrollTop());
+                  that._listContainers[listKey].detach();
+                });
             } else {
-                // restore scroll position (if available)
-                this._widget._lists['selected'].append(this._listContainers['selected'])
-                        .scrollTop( this._widget._lists['selected'].data('scrollTop') || 0 );
-                this._widget._lists['available'].append(this._listContainers['available'])
-                        .scrollTop( this._widget._lists['available'].data('scrollTop') || 0 );
+                $.each(['selected', 'available'], function(index, listKey) {
+                  // restore scroll position (if available)
+                  that._widget._lists[listKey].listContent.append(that._listContainers[listKey])
+                          .scrollTop( that._widget._lists[listKey].listContent.data('scrollTop') || 0 );
+                });
 
-                this._moveEffect = this._oldMoveEffect;
-
-                delete this._oldMoveEffect;
+                this._moveEffect = this._oldMoveEffect; delete this._oldMoveEffect;
             }
 
         },
