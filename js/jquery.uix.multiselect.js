@@ -814,7 +814,7 @@
                     },
                     stop: function(evt, ui) {
                         var e;
-                        if (_received_index) {
+                        if (_received_index != undefined) {
                             e = that._elements[_received_index];
                             _received_index = undefined;
                             ui.item.replaceWith(e.listElement.addClass('ui-state-highlight option-selected'));
