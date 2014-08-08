@@ -1192,7 +1192,7 @@
                     eData.listElement[filtered ? 'hide' : 'show']();
                     eData.filtered = filtered;
                 } else if (eData.selected) {
-                    eData.filtered = false;
+                    eData.filtered = filtered;
                 }
             }
 
