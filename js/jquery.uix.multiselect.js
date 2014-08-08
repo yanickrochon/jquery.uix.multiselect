@@ -1191,7 +1191,7 @@
                 if ((!eData.selected || filterSelected) && (eData.filtered != filtered)) {
                     eData.listElement[filtered ? 'hide' : 'show']();
                     eData.filtered = filtered;
-                } else if (eData.selected) {
+                } else if (eData.selected && !filterSelected) {
                     eData.filtered = false;
                 }
             }
