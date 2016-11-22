@@ -35,6 +35,7 @@
     var EVENT_CHANGE = 'multiselectChange';
     //var EVENT_SEARCH = 'beforesearch';   // for version 2.1
     var EVENT_SEARCH = 'multiselectSearch';
+    var EVENT_REORDERED = 'multiselectReordered';
 
     // The jQuery.uix namespace will automatically be created if it doesn't exist
     $.widget("uix.multiselect", {
@@ -971,6 +972,7 @@
                 }
                 prevElement = currElement;
             });
+            this._widget._triggerUIEvent(EVENT_REORDERED, { selectElement:container.context } );
         },
 
         _bufferedMode: function(enabled) {
