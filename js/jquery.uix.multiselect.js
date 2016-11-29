@@ -1215,7 +1215,7 @@
         },
 
         setSelected: function(eData, selected, silent) {
-            if (eData.optionElement.attr('disabled') && selected) {
+            if (eData.optionElement.attr('disabled')) {
                 return;
             }
 
