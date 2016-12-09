@@ -411,6 +411,12 @@
             var hSlCls = (tSize === 'Width') ? (swap ? '' : 'ui-corner-top') : (swap ? 'ui-corner-tr' : 'ui-corner-tl');
             var hAvCls = (tSize === 'Width') ? (swap ? 'ui-corner-top' : '') : (swap ? 'ui-corner-tl' : 'ui-corner-tr');
 
+            // resize wrapper
+            this._elementWrapper.css({
+                    'width': this.element.outerWidth(),
+                    'height': this.element.outerHeight()
+                });
+				
             // calculate outer lists dimensions
             this._elementWrapper.find('.multiselect-available-list')
                 [sSize.toLowerCase()](cAv).css(styleRule, swap ? 0 : cSl)
